@@ -53,7 +53,7 @@ export default function ResumePage() {
       .eq('id', resume.id);
     setResume({ ...resume, status: 'final' });
     setSaving(false);
-    toast({ title: 'Resume saved!', description: 'Marked as final version.' });
+    toast({ title: '已保存为定稿', description: '这份简历已标记为最终版本。' });
   };
 
   const handleToggleStar = async () => {
@@ -61,7 +61,10 @@ export default function ResumePage() {
     const newStarred = !starred;
     await supabase.from('resume_versions').update({ is_starred: newStarred }).eq('id', resume.id);
     setStarred(newStarred);
-    toast({ title: newStarred ? 'Starred!' : 'Unstarred', description: newStarred ? 'Added to your starred resumes.' : 'Removed from starred.' });
+    toast({
+      title: newStarred ? '已加入收藏' : '已取消收藏',
+      description: newStarred ? '这份简历已加入收藏列表。' : '这份简历已从收藏列表移除。',
+    });
   };
 
   const handleExportPDF = () => {
@@ -73,7 +76,10 @@ export default function ResumePage() {
     if (!resume) return;
     const updated = { ...resume, content: newContent };
     setResume(updated);
-    await supabase.from('resume_versions').update({ content: newContent as any, updated_at: new Date().toISOString() }).eq('id', resume.id);
+    await supabase
+      .from('resume_versions')
+      .update({ content: newContent as any, updated_at: new Date().toISOString() })
+      .eq('id', resume.id);
   };
 
   const handleDesignChange = (design: ResumeDesignSettings) => {
@@ -85,7 +91,10 @@ export default function ResumePage() {
   const handleSaveDesign = async () => {
     if (!resume) return;
     setDesignSaving(true);
-    await supabase.from('resume_versions').update({ content: resume.content as any, updated_at: new Date().toISOString() }).eq('id', resume.id);
+    await supabase
+      .from('resume_versions')
+      .update({ content: resume.content as any, updated_at: new Date().toISOString() })
+      .eq('id', resume.id);
     setDesignSaving(false);
     toast({ title: '排版已保存！' });
   };
@@ -116,7 +125,7 @@ export default function ResumePage() {
             <span className="text-gray-300">/</span>
             <h1 className="text-base font-semibold text-gray-900 truncate max-w-xs">{resume.name}</h1>
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${resume.status === 'final' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
-              {resume.status}
+              {resume.status === 'final' ? '定稿' : '草稿'}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -179,7 +188,9 @@ export default function ResumePage() {
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
                         <span className="text-gray-500">状态</span>
-                        <span className={`font-medium ${resume.status === 'final' ? 'text-emerald-600' : 'text-amber-600'}`}>{resume.status}</span>
+                        <span className={`font-medium ${resume.status === 'final' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                          {resume.status === 'final' ? '定稿' : '草稿'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">创建时间</span>

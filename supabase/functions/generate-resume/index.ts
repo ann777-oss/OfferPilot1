@@ -20,7 +20,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { profile, analysis, jobText, templateStyleDescription } = await req.json();
+    const { profile, analysis, jobText, jobTitle, templateStyleDescription } = await req.json();
     if (!profile || !analysis) {
       return new Response(
         JSON.stringify({ error: "缺少必要参数" }),
@@ -54,6 +54,7 @@ Deno.serve(async (req: Request) => {
 ${jobText || "职位描述：" + analysis.requirements?.join("；")}
 
 ## 岗位关键信息
+- 目标职位名称：${jobTitle || "未提供"}
 - 职位关键词：${analysis.keywords?.join("、")}
 - 核心要求：${analysis.requirements?.join("；")}
 - 已匹配技能：${analysis.matched_skills?.join("、")}
@@ -199,7 +200,7 @@ ${campusJson}
 
     const header = {
       name: p?.full_name || "",
-      title: p?.professional_title || "",
+      title: jobTitle || p?.professional_title || "",
       email: p?.email || "",
       phone: p?.phone || "",
       location: p?.location || "",
@@ -210,7 +211,14 @@ ${campusJson}
     };
 
     return new Response(
-      JSON.stringify({ header, ...generated }),
+      JSON.stringify({
+        ...generated,
+        header: {
+          ...(generated.header ?? {}),
+          ...header,
+          title: jobTitle || generated.header?.title || p?.professional_title || "",
+        },
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

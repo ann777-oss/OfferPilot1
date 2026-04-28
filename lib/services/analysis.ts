@@ -43,7 +43,8 @@ export async function generateTailoredResume(
   profile: MasterProfile,
   analysis: JobAnalysis,
   jobText?: string,
-  template?: TemplateSelection
+  template?: TemplateSelection,
+  jobTitle?: string
 ): Promise<ResumeContent> {
   const url = supabaseUrl || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = supabaseAnonKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -56,7 +57,7 @@ export async function generateTailoredResume(
       'Authorization': `Bearer ${key}`,
       'Apikey': key,
     },
-    body: JSON.stringify({ profile, analysis, jobText, templateStyleDescription: template?.styleDescription }),
+    body: JSON.stringify({ profile, analysis, jobText, jobTitle, templateStyleDescription: template?.styleDescription }),
   });
 
   if (!response.ok) {
@@ -82,7 +83,7 @@ export async function generateTailoredResume(
     template: savedTemplate,
     header: {
       name: p.full_name,
-      title: p.professional_title,
+      title: jobTitle || generated.header?.title || p.professional_title,
       email: p.email,
       phone: p.phone,
       location: p.location,
@@ -90,6 +91,7 @@ export async function generateTailoredResume(
       github: p.github,
       website: p.website,
       ...(generated.header ?? {}),
+      title: jobTitle || generated.header?.title || p.professional_title,
       avatar_url: generated.header?.avatar_url ?? p.avatar_url,
     },
     summary: generated.summary ?? p.summary ?? '',

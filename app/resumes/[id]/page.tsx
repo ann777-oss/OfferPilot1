@@ -57,7 +57,7 @@ export default function ResumeDetailPage() {
     const newStarred = !resume.is_starred;
     await supabase.from('resume_versions').update({ is_starred: newStarred }).eq('id', resume.id);
     setResume({ ...resume, is_starred: newStarred });
-    toast({ title: newStarred ? 'Starred!' : 'Unstarred' });
+    toast({ title: newStarred ? '已加入收藏' : '已取消收藏' });
   };
 
   const handleSaveFinal = async () => {

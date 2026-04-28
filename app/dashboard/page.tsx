@@ -22,7 +22,7 @@ export default function DashboardPage() {
   const [recentResumes, setRecentResumes] = useState<ResumeVersion[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? 'there';
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? '朋友';
 
   useEffect(() => {
     if (!user) return;

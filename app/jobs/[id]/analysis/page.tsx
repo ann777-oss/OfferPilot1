@@ -47,7 +47,8 @@ export default function JobAnalysisPage() {
         profile,
         job.analysis,
         job.raw_text,
-        template
+        template,
+        job.job_title
       );
 
       const { data, error } = await supabase
@@ -55,7 +56,7 @@ export default function JobAnalysisPage() {
         .insert({
           user_id: user.id,
           job_description_id: job.id,
-          name: `${job.job_title || 'Resume'} — ${job.company_name || 'Application'}`,
+          name: `${job.job_title || '定制简历'} — ${job.company_name || '目标岗位'}`,
           content: content as any,
           status: 'draft',
         })
@@ -87,7 +88,7 @@ export default function JobAnalysisPage() {
     );
   }
 
-  if (!job) return <AppLayout><div className="p-8 text-gray-500">Job not found.</div></AppLayout>;
+  if (!job) return <AppLayout><div className="p-8 text-gray-500">未找到该职位记录。</div></AppLayout>;
 
   const analysis = job.analysis;
   const score = analysis.match_score;
