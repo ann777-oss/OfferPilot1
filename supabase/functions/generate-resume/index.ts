@@ -198,7 +198,7 @@ ${campusJson}
 
     const generated = JSON.parse(content);
 
-       const header = {
+    const header = {
       name: p?.full_name || "",
       title: p?.professional_title || "",
       job_title: jobTitle || "",
@@ -218,8 +218,6 @@ ${campusJson}
           ...(generated.header ?? {}),
           ...header,
         },
-      }),
-
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
