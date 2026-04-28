@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, Trash2, Save, GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -41,7 +41,17 @@ function Field({ label, value, onChange, multiline, placeholder }: {
   );
 }
 
-function SectionCard({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+function SectionCard({
+  title,
+  children,
+  defaultOpen = true,
+  action,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  action?: React.ReactNode;
+}) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
@@ -49,7 +59,10 @@ function SectionCard({ title, children, defaultOpen = true }: { title: string; c
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition"
         onClick={() => setOpen(!open)}
       >
-        <span className="font-semibold text-gray-900 text-sm">{title}</span>
+        <div className="flex items-center gap-3">
+          <span className="font-semibold text-gray-900 text-sm">{title}</span>
+          {action && <div onClick={(e) => e.stopPropagation()}>{action}</div>}
+        </div>
         {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
       </button>
       {open && <div className="px-5 pb-5 space-y-4">{children}</div>}
@@ -60,6 +73,7 @@ function SectionCard({ title, children, defaultOpen = true }: { title: string; c
 export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
   const [local, setLocal] = useState<ResumeContent>(content);
   const [saving, setSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState<string | null>(null);
   const { toast } = useToast();
 
   const save = async () => {
@@ -68,6 +82,37 @@ export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
     setSaving(false);
     toast({ title: '更改已保存！' });
   };
+
+  useEffect(() => {
+    setLocal(content);
+  }, [content]);
+
+  const saveSection = async (sectionTitle: string) => {
+    setSavingSection(sectionTitle);
+    try {
+      await onUpdate(local);
+      toast({ title: `${sectionTitle}已保存` });
+    } finally {
+      setSavingSection(null);
+    }
+  };
+
+  const renderSectionSaveButton = (sectionTitle: string) => (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={() => saveSection(sectionTitle)}
+      disabled={saving || savingSection !== null}
+      className="h-7 gap-1.5 text-xs"
+    >
+      {savingSection === sectionTitle ? (
+        <><span className="w-3 h-3 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />保存中...</>
+      ) : (
+        <><Save className="w-3.5 h-3.5" />保存</>
+      )}
+    </Button>
+  );
 
   const setHeader = (key: keyof ResumeContent['header'], val: string) =>
     setLocal((p) => ({ ...p, header: { ...p.header, [key]: val } }));
@@ -276,7 +321,7 @@ export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
 
   return (
     <div className="space-y-3">
-      <SectionCard title="个人信息">
+      <SectionCard title="个人信息" action={renderSectionSaveButton('个人信息')}>
         <div className="grid grid-cols-2 gap-3">
           <Field label="姓名" value={local.header.name} onChange={(v) => setHeader('name', v)} />
           <Field label="职位头衔" value={local.header.title} onChange={(v) => setHeader('title', v)} />
@@ -291,7 +336,7 @@ export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
       </SectionCard>
 
       {local.core_keywords !== undefined && (
-        <SectionCard title="核心能力关键词">
+        <SectionCard title="核心能力关键词" action={renderSectionSaveButton('核心能力关键词')}>
           <div className="space-y-2">
             {(local.core_keywords ?? []).map((kw, i) => (
               <div key={i} className="flex gap-2 items-center">
@@ -315,7 +360,7 @@ export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
         </SectionCard>
       )}
 
-      <SectionCard title="个人简介">
+      <SectionCard title="个人简介" action={renderSectionSaveButton('个人简介')}>
         <textarea
           value={local.summary ?? ''}
           onChange={(e) => setLocal({ ...local, summary: e.target.value })}
@@ -324,7 +369,7 @@ export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
         />
       </SectionCard>
 
-      <SectionCard title="工作经历">
+      <SectionCard title="工作经历" action={renderSectionSaveButton('工作经历')}>
         <div className="space-y-5">
           {local.experience.map((exp, idx) => (
             <div key={exp.id} className="border border-gray-100 rounded-lg p-4 space-y-3">
@@ -381,7 +426,7 @@ export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
         </div>
       </SectionCard>
 
-      <SectionCard title="项目经历">
+      <SectionCard title="项目经历" action={renderSectionSaveButton('项目经历')}>
         <div className="space-y-5">
           {local.projects.map((proj, idx) => (
             <div key={proj.id} className="border border-gray-100 rounded-lg p-4 space-y-3">
@@ -426,7 +471,7 @@ export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
         </div>
       </SectionCard>
 
-      <SectionCard title="教育背景">
+      <SectionCard title="教育背景" action={renderSectionSaveButton('教育背景')}>
         <div className="space-y-4">
           {local.education.map((edu, idx) => (
             <div key={edu.id} className="border border-gray-100 rounded-lg p-4 space-y-3">
@@ -452,7 +497,7 @@ export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
         </div>
       </SectionCard>
 
-      <SectionCard title="校园经历">
+      <SectionCard title="校园经历" action={renderSectionSaveButton('校园经历')}>
         <div className="space-y-5">
           {(local.campusActivities ?? []).map((activity, idx) => (
             <div key={activity.id} className="border border-gray-100 rounded-lg p-4 space-y-3">
@@ -510,7 +555,7 @@ export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
         </div>
       </SectionCard>
 
-      <SectionCard title="专业技能">
+      <SectionCard title="专业技能" action={renderSectionSaveButton('专业技能')}>
         <div className="space-y-3">
           {local.skills.map((group, idx) => (
             <div key={idx} className="flex gap-2 items-start">
@@ -541,7 +586,7 @@ export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
         </div>
       </SectionCard>
 
-      <SectionCard title="证书 & 奖项" defaultOpen={false}>
+      <SectionCard title="证书 & 奖项" defaultOpen={false} action={renderSectionSaveButton('证书 & 奖项')}>
         <div className="space-y-3">
           {local.certifications.map((cert, idx) => (
             <div key={cert.id} className="flex gap-2 items-start">
@@ -580,7 +625,7 @@ export default function ResumeEditor({ content, onUpdate }: ResumeEditorProps) {
       </SectionCard>
 
       <div className="flex justify-end pt-2 pb-6">
-        <Button onClick={save} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-6">
+        <Button onClick={save} disabled={saving || savingSection !== null} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-6">
           {saving ? (
             <><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />保存中...</>
           ) : (
