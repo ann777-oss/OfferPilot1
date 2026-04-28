@@ -83,7 +83,6 @@ export async function generateTailoredResume(
     template: savedTemplate,
     header: {
       name: p.full_name,
-      title: jobTitle || generated.header?.title || p.professional_title,
       email: p.email,
       phone: p.phone,
       location: p.location,
