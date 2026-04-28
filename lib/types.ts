@@ -135,6 +135,7 @@ export interface ResumeContent {
   header: {
     name: string;
     title: string;
+    job_title?: string;
     email: string;
     phone: string;
     location: string;
