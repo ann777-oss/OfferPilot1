@@ -69,15 +69,15 @@ export default function CertificationsSection({ userId, certifications, onSaved 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5 md:col-span-2">
               <Label className="text-xs font-medium text-gray-600">证书名称</Label>
-              <Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} placeholder="AWS 解决方案架构师认证" />
+              <Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} placeholder="如大学英语四级" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium text-gray-600">颁发机构</Label>
-              <Input value={editing.issuer} onChange={(e) => setEditing({ ...editing, issuer: e.target.value })} placeholder="Amazon Web Services" />
+              <Input value={editing.issuer} onChange={(e) => setEditing({ ...editing, issuer: e.target.value })} placeholder="如教育部教育考试院" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium text-gray-600">证书编号（选填）</Label>
-              <Input value={editing.credential_id} onChange={(e) => setEditing({ ...editing, credential_id: e.target.value })} placeholder="AWS-SAA-12345" />
+              <Input value={editing.credential_id} onChange={(e) => setEditing({ ...editing, credential_id: e.target.value })} placeholder="如 CET4-2023-123456" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium text-gray-600">颁发日期</Label>
