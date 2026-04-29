@@ -13,6 +13,15 @@ import { calculateProfileCompletion, getMasterProfile, updateProfileCompletion }
 import { useToast } from '@/hooks/use-toast';
 import type { JobDescription, ResumeVersion } from '@/lib/types';
 
+const RESUME_STATUS_LABELS: Record<string, string> = {
+  draft: '草稿',
+  pending: '待投递',
+  applied: '已投递',
+  interviewing: '面试中',
+  archived: '已归档',
+  final: '定稿',
+};
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -225,7 +234,7 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       {resume.is_starred && <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />}
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${resume.status === 'final' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
-                        {resume.status}
+                        {RESUME_STATUS_LABELS[resume.status] ?? resume.status}
                       </span>
                       <button
                         onClick={(e) => handleDeleteResume(e, resume.id)}
