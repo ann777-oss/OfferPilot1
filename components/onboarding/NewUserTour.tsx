@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, X } from 'lucide-react';
+import { ArrowRight, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type TourStep = {
@@ -18,7 +18,7 @@ type HighlightRect = {
   height: number;
 };
 
-const TOUR_VERSION = 'v1';
+const TOUR_VERSION = 'v2';
 
 interface NewUserTourProps {
   userId: string;
@@ -32,45 +32,64 @@ export default function NewUserTour({ userId }: NewUserTourProps) {
 
   const storageKey = useMemo(() => `resume-tailor:onboarding:${TOUR_VERSION}:${userId}`, [userId]);
 
-  const steps = useMemo<TourStep[]>(() => [
-    {
-      title: '欢迎来到 ResumeTailor AI',
-      description: '左侧是你的主导航区。后续大部分操作都会从这里开始，先熟悉这几个核心入口。',
-      selector: '[data-tour="app-logo"]',
-    },
-    {
-      title: '先完善职业档案',
-      description: '“职业档案”是生成简历的基础资料库。把教育背景、实习经历、项目、技能和证书补全，生成效果会更稳定。',
-      selector: '[data-tour="nav-profile"]',
-    },
-    {
-      title: '再新建一次求职',
-      description: '点击“新建求职”，填入职位名称并粘贴职位描述，系统会先分析岗位，再生成对应简历。',
-      selector: '[data-tour="nav-new-job"]',
-    },
-    {
-      title: '这里查看生成结果',
-      description: '后续生成的简历版本会沉淀到“简历历史”里，方便你回看、对比和继续修改。',
-      selector: '[data-tour="nav-resumes"]',
-    },
-    {
-      title: '账号信息和退出入口',
-      description: '底部可以看到当前登录账号；如果你换设备或账号，也是在这里退出登录。',
-      selector: '[data-tour="account-panel"]',
-    },
-    {
-      title: '开始使用',
-      description: '建议第一步先去完善职业档案，第二步再新建求职。这样生成的简历内容会更贴近目标岗位。',
-    },
-  ], []);
+  const steps = useMemo<TourStep[]>(
+    () => [
+      {
+        title: '这是你的求职操作台',
+        description:
+          'OfferPilot 不是只生成一份简历的工具，而是围绕每一个岗位申请，陪你推进从准备资料、定制简历、准备面试到管理 Offer 的完整流程。',
+        selector: '[data-tour="app-logo"]',
+      },
+      {
+        title: '先完善职业档案',
+        description:
+          '职业档案是你的基础资料库。教育背景、校园经历、项目、技能和证书越完整，后续生成的简历和面试准备材料就越贴合真实经历。',
+        selector: '[data-tour="nav-profile"]',
+      },
+      {
+        title: '用求职项目管理每个岗位',
+        description:
+          '每投一个公司或岗位，都建议新建一个求职项目。项目里会保存 JD 分析、投递信息、项目状态和后续所有推进记录。',
+        selector: '[data-tour="nav-jobs"]',
+      },
+      {
+        title: '围绕项目产出简历',
+        description:
+          '简历中心会沉淀你为不同岗位生成的简历版本。你可以回看、修改，也可以继续从具体求职项目进入对应简历。',
+        selector: '[data-tour="nav-resumes"]',
+      },
+      {
+        title: '面试集中到面试中心',
+        description:
+          '面试中心把面试准备材料、待完善复盘和已完成复盘放在一起，方便你按项目持续准备和复盘。',
+        selector: '[data-tour="nav-interviews"]',
+      },
+      {
+        title: 'Offer 是求职项目的最后一步',
+        description:
+          '当项目推进到 Offer 阶段，可以在 Offer 管理里记录薪资、城市、部门、工作制、转正机会和回复截止时间，并进行横向对比。',
+        selector: '[data-tour="nav-offers"]',
+      },
+      {
+        title: '建议的使用顺序',
+        description:
+          '推荐路径是：先完善职业档案，再新建求职项目，之后围绕项目依次推进简历、面试和 Offer。每天回到工作台查看下一步该做什么。',
+        selector: '[data-tour="nav-dashboard"]',
+      },
+    ],
+    []
+  );
 
-  const closeTour = useCallback((finished: boolean) => {
-    setOpen(false);
-    setHighlightRect(null);
-    if (finished) {
-      window.localStorage.setItem(storageKey, 'done');
-    }
-  }, [storageKey]);
+  const closeTour = useCallback(
+    (finished: boolean) => {
+      setOpen(false);
+      setHighlightRect(null);
+      if (finished) {
+        window.localStorage.setItem(storageKey, 'done');
+      }
+    },
+    [storageKey]
+  );
 
   const updateHighlight = useCallback(() => {
     const selector = steps[currentStep]?.selector;
@@ -121,11 +140,11 @@ export default function NewUserTour({ userId }: NewUserTourProps) {
   const step = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
   const cardTop = highlightRect
-    ? Math.min(window.innerHeight - 240, Math.max(24, highlightRect.top + highlightRect.height + 18))
-    : Math.max(40, window.innerHeight / 2 - 120);
+    ? Math.min(window.innerHeight - 260, Math.max(24, highlightRect.top + highlightRect.height + 18))
+    : Math.max(40, window.innerHeight / 2 - 130);
   const cardLeft = highlightRect
-    ? Math.min(window.innerWidth - 380, Math.max(24, highlightRect.left))
-    : Math.max(24, window.innerWidth / 2 - 180);
+    ? Math.min(window.innerWidth - 400, Math.max(24, highlightRect.left))
+    : Math.max(24, window.innerWidth / 2 - 190);
 
   return (
     <div className="fixed inset-0 z-[100]">
@@ -144,10 +163,10 @@ export default function NewUserTour({ userId }: NewUserTourProps) {
       )}
 
       <div
-        className="absolute w-[min(360px,calc(100vw-32px))] rounded-2xl bg-white p-5 shadow-2xl border border-slate-200"
+        className="absolute w-[min(380px,calc(100vw-32px))] rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl"
         style={{ top: cardTop, left: cardLeft }}
       >
-        <div className="flex items-start justify-between gap-4 mb-3">
+        <div className="mb-3 flex items-start justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100">
               <Sparkles className="h-4 w-4 text-blue-600" />
@@ -178,7 +197,7 @@ export default function NewUserTour({ userId }: NewUserTourProps) {
           ))}
         </div>
 
-        <div className="mt-5 flex items-center justify-between">
+        <div className="mt-5 flex items-center justify-between gap-3">
           <span className="text-xs text-slate-400">
             第 {currentStep + 1} 步，共 {steps.length} 步
           </span>
@@ -189,7 +208,7 @@ export default function NewUserTour({ userId }: NewUserTourProps) {
               </Button>
             )}
             {!isLastStep ? (
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setCurrentStep((prev) => prev + 1)}>
+              <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => setCurrentStep((prev) => prev + 1)}>
                 下一步
               </Button>
             ) : (
@@ -202,10 +221,18 @@ export default function NewUserTour({ userId }: NewUserTourProps) {
                     router.push('/profile');
                   }}
                 >
-                  去完善档案
+                  完善档案
                 </Button>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => closeTour(true)}>
-                  我知道了
+                <Button
+                  size="sm"
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  onClick={() => {
+                    closeTour(true);
+                    router.push('/jobs');
+                  }}
+                >
+                  去看求职项目
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                 </Button>
               </>
             )}

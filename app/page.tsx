@@ -1,79 +1,94 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Sparkles, CircleCheck as CheckCircle2, Zap, Shield, FileText, Upload, Star, ChevronRight } from 'lucide-react';
+import {
+  ArrowRight,
+  BadgeCheck,
+  Briefcase,
+  ChevronRight,
+  CircleCheck as CheckCircle2,
+  ClipboardList,
+  FileText,
+  MessageSquare,
+  Shield,
+  Sparkles,
+  Star,
+  Target,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const features = [
   {
-    icon: Shield,
-    title: '绝不虚构内容',
-    description: '我们仅使用您的真实经历和成就，绝不编造内容，100% 真实可信。',
-  },
-  {
-    icon: Zap,
-    title: '即时 ATS 优化',
-    description: 'AI 从任意职位描述中识别 ATS 关键词，并自然地融入您的简历。',
+    icon: Briefcase,
+    title: '以求职项目为中心',
+    description: '每个公司和岗位都是一个独立项目，JD 分析、投递状态、简历、面试和 Offer 都围绕项目推进。',
   },
   {
     icon: FileText,
-    title: '一份核心档案',
-    description: '一次录入完整职业经历，为每次求职生成无限量定制简历。',
+    title: '岗位专属简历',
+    description: '基于你的真实职业档案和目标 JD，生成更贴合岗位要求的简历版本，并沉淀到简历中心。',
   },
   {
-    icon: Upload,
-    title: '粘贴或上传职位描述',
-    description: '直接粘贴职位文本，或上传截图，我们的 OCR 引擎自动提取内容。',
+    icon: MessageSquare,
+    title: '面试准备与复盘',
+    description: '为具体岗位生成面试准备材料，面试后继续记录问题、回答和改进点，形成可复用经验。',
+  },
+  {
+    icon: BadgeCheck,
+    title: 'Offer 管理与对比',
+    description: '记录薪资、城市、部门、工作制、转正机会和回复截止时间，帮助你做最终选择。',
   },
 ];
 
 const steps = [
-  { number: '01', title: '创建职业核心档案', description: '一次性录入工作经历、教育背景、项目经验、技能与成就。' },
-  { number: '02', title: '粘贴或上传职位描述', description: '输入职位描述，AI 分析关键词、岗位要求和 ATS 术语。' },
-  { number: '03', title: '获得定制化简历', description: '我们从档案中筛选并改写与岗位最相关的内容。' },
-  { number: '04', title: '编辑、保存并导出', description: '微调生成的简历，保存版本，下载为整洁的 PDF 文件。' },
+  { number: '01', title: '完善职业档案', description: '录入教育背景、校园经历、项目、技能和证书，作为后续简历与面试准备的基础资料。' },
+  { number: '02', title: '新建求职项目', description: '填写目标公司、职位和 JD，让系统把这次申请变成可持续推进的项目。' },
+  { number: '03', title: '推进简历与面试', description: '围绕项目生成定制简历、准备面试材料，并在面试后完成复盘记录。' },
+  { number: '04', title: '管理 Offer 决策', description: '当项目进入 Offer 阶段，集中记录关键信息，并在多个 Offer 之间横向对比。' },
 ];
 
 const testimonials = [
   {
-    quote: '使用 ResumeTailor AI 后，我的简历回复率从 2% 提升到了 18%，专属定制简历的效果有目共睹。',
-    author: 'Priya S.',
-    role: '产品经理',
+    quote: '以前我只是到处改简历，现在每个岗位都有自己的进度和下一步动作，求职过程清楚很多。',
+    author: '大二学生',
+    role: 'AI 产品实习方向',
   },
   {
-    quote: '以前每份申请要花 3 小时，现在 10 分钟就能搞定，质量还更高。',
-    author: 'Marcus L.',
-    role: '高级软件工程师',
+    quote: '职业档案、项目简历、面试复盘和 Offer 终于串起来了，不再是零散文件夹。',
+    author: '应届生',
+    role: '运营与产品方向',
   },
   {
-    quote: '它绝不虚构内容，这让我很放心。每一条都是我真实的经历。',
-    author: 'Dana K.',
-    role: 'UX 设计师',
+    quote: '最有用的是按岗位推进，每次打开都知道这个项目下一步该做什么。',
+    author: '在校求职者',
+    role: '互联网实习方向',
   },
 ];
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-100 sticky top-0 z-50 bg-white/95 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600">
+              <Sparkles className="h-3.5 w-3.5 text-white" />
             </div>
-            <span className="font-bold text-gray-900">ResumeTailor <span className="text-blue-600">AI</span></span>
+            <span className="font-bold text-gray-900">
+              OfferPilot
+            </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">功能特点</a>
-            <a href="#how-it-works" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">使用流程</a>
-            <a href="#testimonials" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">用户评价</a>
+          <nav className="hidden items-center gap-8 md:flex">
+            <a href="#features" className="text-sm text-gray-600 transition-colors hover:text-gray-900">核心功能</a>
+            <a href="#how-it-works" className="text-sm text-gray-600 transition-colors hover:text-gray-900">使用流程</a>
+            <a href="#testimonials" className="text-sm text-gray-600 transition-colors hover:text-gray-900">用户反馈</a>
           </nav>
           <div className="flex items-center gap-3">
             <Link href="/auth">
               <Button variant="ghost" size="sm" className="text-gray-600">登录</Button>
             </Link>
             <Link href="/auth?mode=signup">
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
                 免费开始
               </Button>
             </Link>
@@ -81,36 +96,36 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section className="pt-20 pb-24 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-6 border border-blue-100">
-            <Sparkles className="w-3 h-3" />
-            AI 驱动的简历定制
+      <section className="px-6 pb-24 pt-20">
+        <div className="mx-auto max-w-4xl text-center">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-blue-700">
+            <Sparkles className="h-3 w-3" />
+            AI 驱动的全流程求职助手
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight tracking-tight mb-6">
-            一份档案，<br />
-            <span className="text-blue-600">每个岗位，</span>量身定制。
+          <h1 className="mx-auto mb-6 max-w-4xl text-center text-5xl font-extrabold leading-tight tracking-tight text-gray-900 md:text-6xl">
+            管理每一次申请<br />
+            <span className="text-blue-600">推进每一步求职</span>
           </h1>
-          <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-            一次录入职业档案，秒级生成岗位专属、ATS 优化的简历——仅使用您的真实经历，绝不虚构。
+          <p className="mx-auto mb-10 max-w-2xl text-xl leading-relaxed text-gray-500">
+            从职业档案、JD 分析、岗位专属简历，到面试准备、复盘和 Offer 对比，把每个岗位申请都管理成一个清晰的求职项目。
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/auth?mode=signup">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 h-12 text-base shadow-lg shadow-blue-200">
+              <Button size="lg" className="h-12 bg-blue-600 px-8 text-base text-white shadow-lg shadow-blue-200 hover:bg-blue-700">
                 免费开始
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link href="/auth">
-              <Button variant="outline" size="lg" className="px-8 h-12 text-base border-gray-200 text-gray-700">
+              <Button variant="outline" size="lg" className="h-12 border-gray-200 px-8 text-base text-gray-700">
                 登录账户
               </Button>
             </Link>
           </div>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
-            {['无需信用卡', '永久免费方案', '隐私优先'].map((item) => (
+            {['围绕真实经历生成', '按岗位项目推进', '覆盖简历到 Offer'].map((item) => (
               <span key={item} className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
                 {item}
               </span>
             ))}
@@ -118,33 +133,33 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-4 border-y border-gray-100 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex flex-wrap justify-center gap-x-12 gap-y-3 text-sm text-gray-400 font-medium">
-            {['Stripe', 'Airbnb', 'Google', 'Meta', 'Shopify', 'Figma', 'Notion', 'Linear'].map((co) => (
-              <span key={co} className="opacity-50 hover:opacity-80 transition-opacity">{co}</span>
+      <section className="border-y border-gray-100 bg-gray-50 py-4">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="flex flex-wrap justify-center gap-x-12 gap-y-3 text-sm font-medium text-gray-400">
+            {['职业档案', '求职项目', 'JD 分析', '定制简历', '面试中心', 'Offer 管理'].map((item) => (
+              <span key={item} className="opacity-60 transition-opacity hover:opacity-90">{item}</span>
             ))}
           </div>
-          <p className="text-center text-xs text-gray-400 mt-3">助力求职者进入顶尖企业</p>
+          <p className="mt-3 text-center text-xs text-gray-400">为在校生、应届生和求职转向者设计的求职工作台</p>
         </div>
       </section>
 
-      <section id="features" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">求职所需，一应俱全</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">为现代求职而生——智能、真实、高效。</p>
+      <section id="features" className="px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-16 text-center">
+            <h2 className="mb-3 text-3xl font-bold text-gray-900">把求职流程串成一条线</h2>
+            <p className="mx-auto max-w-xl text-gray-500">不是堆工具，而是围绕每个岗位申请持续推进。</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {features.map((feature) => {
               const Icon = feature.icon;
               return (
-                <div key={feature.title} className="p-6 rounded-2xl border border-gray-100 hover:border-blue-100 hover:shadow-md transition-all duration-200 group">
-                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
-                    <Icon className="w-5 h-5 text-blue-600" />
+                <div key={feature.title} className="group rounded-2xl border border-gray-100 p-6 transition-all duration-200 hover:border-blue-100 hover:shadow-md">
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 transition-colors group-hover:bg-blue-100">
+                    <Icon className="h-5 w-5 text-blue-600" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{feature.description}</p>
+                  <h3 className="mb-2 font-semibold text-gray-900">{feature.title}</h3>
+                  <p className="text-sm leading-relaxed text-gray-500">{feature.description}</p>
                 </div>
               );
             })}
@@ -152,54 +167,73 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="how-it-works" className="py-24 px-6 bg-gray-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">四步从档案到 PDF</h2>
-            <p className="text-gray-500">将您的经验最快速地转化为求职利器。</p>
+      <section id="how-it-works" className="bg-gray-50 px-6 py-24">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-16 text-center">
+            <h2 className="mb-3 text-3xl font-bold text-gray-900">从准备到 Offer 的四步流程</h2>
+            <p className="text-gray-500">让每一次岗位申请都有资料、有进度、有下一步。</p>
           </div>
           <div className="space-y-4">
-            {steps.map((step, i) => (
-              <div key={step.number} className="flex gap-6 items-start p-6 bg-white rounded-2xl border border-gray-100">
-                <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+            {steps.map((step, index) => (
+              <div key={step.number} className="flex items-start gap-6 rounded-2xl border border-gray-100 bg-white p-6">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white">
                   {step.number}
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 mb-1">{step.title}</h3>
+                  <h3 className="mb-1 font-semibold text-gray-900">{step.title}</h3>
                   <p className="text-sm text-gray-500">{step.description}</p>
                 </div>
-                {i < steps.length - 1 && (
-                  <ChevronRight className="w-5 h-5 text-gray-200 self-center flex-shrink-0" />
-                )}
+                {index < steps.length - 1 && <ChevronRight className="h-5 w-5 flex-shrink-0 self-center text-gray-200" />}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="testimonials" className="py-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">深受求职者喜爱</h2>
-            <div className="flex items-center justify-center gap-1 mt-2">
+      <section className="px-6 py-24">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-10 grid gap-6 md:grid-cols-3">
+            {[
+              { icon: Target, title: '今天该做什么', text: '工作台会把最需要推进的项目和动作放到最前面。' },
+              { icon: ClipboardList, title: '每个岗位独立管理', text: '不同公司、职位、简历和面试记录不会混在一起。' },
+              { icon: Shield, title: '基于真实经历', text: '所有内容围绕你的职业档案组织，不鼓励虚构经历。' },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.title} className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
+                  <Icon className="mb-4 h-6 w-6 text-blue-600" />
+                  <h3 className="mb-2 font-semibold text-gray-900">{item.title}</h3>
+                  <p className="text-sm leading-6 text-gray-500">{item.text}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section id="testimonials" className="px-6 pb-24">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-16 text-center">
+            <h2 className="mb-3 text-3xl font-bold text-gray-900">适合正在认真推进求职的人</h2>
+            <div className="mt-2 flex items-center justify-center gap-1">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
               ))}
-              <span className="text-sm text-gray-500 ml-2">4.9 / 5 分</span>
+              <span className="ml-2 text-sm text-gray-500">围绕求职全流程设计</span>
             </div>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((t) => (
-              <div key={t.author} className="p-6 rounded-2xl bg-gray-50 border border-gray-100">
-                <div className="flex gap-1 mb-4">
+          <div className="grid gap-6 md:grid-cols-3">
+            {testimonials.map((item) => (
+              <div key={item.author} className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
+                <div className="mb-4 flex gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-sm text-gray-700 mb-4 leading-relaxed">&ldquo;{t.quote}&rdquo;</p>
+                <p className="mb-4 text-sm leading-relaxed text-gray-700">&ldquo;{item.quote}&rdquo;</p>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">{t.author}</p>
-                  <p className="text-xs text-gray-400">{t.role}</p>
+                  <p className="text-sm font-semibold text-gray-900">{item.author}</p>
+                  <p className="text-xs text-gray-400">{item.role}</p>
                 </div>
               </div>
             ))}
@@ -207,32 +241,32 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-24 px-6 bg-blue-600">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-3">立即开始定制您的简历</h2>
-          <p className="text-blue-100 mb-8">加入数千名使用 ResumeTailor AI 获得更多面试机会的职场人。</p>
+      <section className="bg-blue-600 px-6 py-24">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="mb-3 text-3xl font-bold text-white">开始管理你的求职项目</h2>
+          <p className="mb-8 text-blue-100">从第一个目标岗位开始，把简历、面试和 Offer 都放到同一条清晰流程里。</p>
           <Link href="/auth?mode=signup">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 px-8 h-12 text-base font-semibold shadow-lg">
+            <Button size="lg" className="h-12 bg-white px-8 text-base font-semibold text-blue-600 shadow-lg hover:bg-blue-50">
               免费注册
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
         </div>
       </section>
 
-      <footer className="border-t border-gray-100 py-10 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-gray-100 px-6 py-10">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-white" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-600">
+              <Sparkles className="h-3 w-3 text-white" />
             </div>
-            <span className="font-bold text-sm text-gray-900">ResumeTailor AI</span>
+            <span className="text-sm font-bold text-gray-900">OfferPilot</span>
           </div>
-          <p className="text-xs text-gray-400">© 2025 ResumeTailor AI 版权所有</p>
+          <p className="text-xs text-gray-400">© 2026 OfferPilot 版权所有</p>
           <div className="flex gap-6 text-xs text-gray-400">
-            <a href="#" className="hover:text-gray-600 transition-colors">隐私政策</a>
-            <a href="#" className="hover:text-gray-600 transition-colors">服务条款</a>
-            <a href="#" className="hover:text-gray-600 transition-colors">联系我们</a>
+            <a href="#" className="transition-colors hover:text-gray-600">隐私政策</a>
+            <a href="#" className="transition-colors hover:text-gray-600">服务条款</a>
+            <a href="#" className="transition-colors hover:text-gray-600">联系我们</a>
           </div>
         </div>
       </footer>

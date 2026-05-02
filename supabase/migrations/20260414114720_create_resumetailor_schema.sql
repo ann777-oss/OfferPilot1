@@ -1,8 +1,8 @@
 /*
-  # ResumeTailor AI - Complete Database Schema
+  # OfferPilot - Complete Database Schema
 
   ## Overview
-  Full schema for the ResumeTailor AI application including all master profile data,
+  Full schema for the OfferPilot application including all master profile data,
   job descriptions with analysis, and generated resume versions.
 
   ## New Tables

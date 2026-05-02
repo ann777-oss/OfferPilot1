@@ -9,6 +9,9 @@
 DROP POLICY IF EXISTS "Users can upload own profile photos" ON storage.objects;
 DROP POLICY IF EXISTS "Users can update own profile photos" ON storage.objects;
 DROP POLICY IF EXISTS "Users can delete own profile photos" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can upload profile photos" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can update profile photos" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can delete profile photos" ON storage.objects;
 
 CREATE POLICY "Authenticated users can upload profile photos"
   ON storage.objects FOR INSERT

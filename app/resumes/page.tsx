@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FileText, Star, ArrowRight, CirclePlus as PlusCircle, Search, Filter, Trash2, Download } from 'lucide-react';
+import { ArrowRight, CirclePlus as PlusCircle, FileText, Search, Star, Trash2 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
@@ -35,43 +35,49 @@ export default function ResumesPage() {
     setLoading(false);
   };
 
-  useEffect(() => { loadResumes(); }, [user]);
+  useEffect(() => {
+    loadResumes();
+  }, [user]);
 
   const handleDelete = async (id: string) => {
     setDeleting(id);
     await supabase.from('resume_versions').delete().eq('id', id);
-    setResumes((prev) => prev.filter((r) => r.id !== id));
+    setResumes((prev) => prev.filter((resume) => resume.id !== id));
     setDeleting(null);
-    toast({ title: '简历已删除' });
+    toast({ title: '已删除简历' });
   };
 
   const handleToggleStar = async (id: string, current: boolean) => {
     await supabase.from('resume_versions').update({ is_starred: !current }).eq('id', id);
-    setResumes((prev) => prev.map((r) => r.id === id ? { ...r, is_starred: !current } : r));
+    setResumes((prev) => prev.map((resume) => (resume.id === id ? { ...resume, is_starred: !current } : resume)));
   };
 
-  const filtered = resumes.filter((r) => {
-    const matchSearch = r.name.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === 'all' || r.status === filterStatus || (filterStatus === 'starred' && r.is_starred);
+  const filtered = resumes.filter((resume) => {
+    const matchSearch = resume.name.toLowerCase().includes(search.toLowerCase());
+    const matchStatus =
+      filterStatus === 'all' ||
+      resume.status === filterStatus ||
+      (filterStatus === 'starred' && resume.is_starred);
     return matchSearch && matchStatus;
   });
 
   const stats = {
     total: resumes.length,
-    final: resumes.filter((r) => r.status === 'final').length,
-    starred: resumes.filter((r) => r.is_starred).length,
+    final: resumes.filter((resume) => resume.status === 'final').length,
+    starred: resumes.filter((resume) => resume.is_starred).length,
   };
 
   return (
     <AppLayout>
       <div className="p-8 max-w-5xl mx-auto">
         <PageHeader
-          title="简历历史"
-          description="所有定制简历版本汇总在此。"
+          title="简历中心"
+          description="这里汇总你在所有求职项目里生成过的简历版本，方便统一查看、筛选和回访。"
           actions={
             <Link href="/jobs/new">
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white gap-1.5">
-                <PlusCircle className="w-3.5 h-3.5" />新建简历
+                <PlusCircle className="w-3.5 h-3.5" />
+                新建求职项目
               </Button>
             </Link>
           }
@@ -80,9 +86,9 @@ export default function ResumesPage() {
         {!loading && resumes.length > 0 && (
           <div className="grid grid-cols-3 gap-4 mb-6">
             {[
-              { label: '简历总数', value: stats.total, color: 'text-blue-600', bg: 'bg-blue-50' },
-              { label: '已定稿', value: stats.final, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-              { label: '已收藏', value: stats.starred, color: 'text-amber-600', bg: 'bg-amber-50' },
+              { label: '简历总数', value: stats.total, color: 'text-blue-600' },
+              { label: '已定稿', value: stats.final, color: 'text-emerald-600' },
+              { label: '已收藏', value: stats.starred, color: 'text-amber-600' },
             ].map((stat) => (
               <div key={stat.label} className="bg-white rounded-xl border border-gray-100 p-4">
                 <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
@@ -99,7 +105,7 @@ export default function ResumesPage() {
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="搜索简历..."
+                placeholder="搜索简历名称..."
                 className="pl-9 h-9 text-sm"
               />
             </div>
@@ -113,7 +119,9 @@ export default function ResumesPage() {
                 <button
                   key={key}
                   onClick={() => setFilterStatus(key)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${filterStatus === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    filterStatus === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  }`}
                 >
                   {label}
                 </button>
@@ -133,13 +141,13 @@ export default function ResumesPage() {
             <EmptyState
               icon={FileText}
               title="暂无简历"
-              description="分析一个职位描述，生成您的第一份定制简历。"
-              actionLabel="分析职位"
+              description="先新建一个求职项目，再生成你的第一份项目专属简历。"
+              actionLabel="新建求职项目"
               onAction={() => router.push('/jobs/new')}
             />
           ) : (
             <div className="py-12 text-center">
-              <p className="text-sm text-gray-400">没有符合筛选条件的简历。</p>
+              <p className="text-sm text-gray-400">没有符合当前筛选条件的简历。</p>
             </div>
           )
         ) : (
@@ -159,7 +167,8 @@ export default function ResumesPage() {
                     </div>
                     <p className="text-xs text-gray-400">
                       创建于 {new Date(resume.created_at).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      {resume.updated_at !== resume.created_at && ` · 更新于 ${new Date(resume.updated_at).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}`}
+                      {resume.updated_at !== resume.created_at &&
+                        ` · 更新于 ${new Date(resume.updated_at).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">

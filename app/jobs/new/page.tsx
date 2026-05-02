@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Upload, Sparkles, CircleAlert as AlertCircle, ArrowRight, CircleCheck as CheckCircle2 } from 'lucide-react';
+import { FileText, Upload, Sparkles, CircleAlert as AlertCircle } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,15 +47,24 @@ export default function JobInputPage() {
   const router = useRouter();
 
   const handleAnalyze = async () => {
-    if (!companyName.trim()) { setError('请输入公司名称。'); return; }
-    if (!jobTitle.trim()) { setError('请输入职位名称。'); return; }
-    if (!jobText.trim()) { setError('请粘贴职位描述。'); return; }
+    if (!companyName.trim()) {
+      setError('请输入公司名称');
+      return;
+    }
+    if (!jobTitle.trim()) {
+      setError('请输入职位名称');
+      return;
+    }
+    if (!jobText.trim()) {
+      setError('请粘贴职位描述');
+      return;
+    }
     if (!user) return;
+
     setError('');
     setAnalyzing(true);
 
     try {
-      console.log('🔍 调试信息 - 新建求职时的职位名称:', jobTitle);
       const profile = await getMasterProfile(user.id);
       const analysis = await analyzeJobDescription(jobText, profile);
 
@@ -74,17 +83,15 @@ export default function JobInputPage() {
         .select('id')
         .single();
 
-      console.log('✅ 保存到数据库的job_title:', jobTitle);
-
       if (insertError || !data) {
-        setError('保存职位描述失败，请重试。');
+        setError('保存职位描述失败，请重试');
         return;
       }
 
       router.push(`/jobs/${data.id}/analysis`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : '分析失败，请重试。';
-      setError(msg.includes('DeepSeek API Key') ? 'AI 服务未配置，请先填写 DeepSeek API Key。' : msg);
+      const msg = err instanceof Error ? err.message : '分析失败，请重试';
+      setError(msg.includes('DeepSeek API Key') ? 'AI 服务未配置，请先填写 DeepSeek API Key' : msg);
     } finally {
       setAnalyzing(false);
     }
@@ -94,17 +101,17 @@ export default function JobInputPage() {
     <AppLayout>
       <div className="p-8 max-w-3xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">新建求职</h1>
-          <p className="text-sm text-gray-500 mt-0.5">粘贴职位描述，我们将与您的职业档案进行智能匹配分析。</p>
+          <h1 className="text-2xl font-bold text-gray-900">新建求职项目</h1>
+          <p className="text-sm text-gray-500 mt-0.5">填写目标公司、职位和 JD，创建一条新的岗位申请，并开始后续的简历定制流程。</p>
         </div>
 
         <div className="space-y-5">
           <div className="bg-white rounded-xl border border-gray-100 p-5">
-            <h2 className="font-semibold text-gray-900 mb-4 text-sm">职位信息（必填）</h2>
+            <h2 className="font-semibold text-gray-900 mb-4 text-sm">项目基础信息（必填）</h2>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium text-gray-600">公司名称</Label>
-                <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="如 字节跳动" />
+                <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="如字节跳动" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium text-gray-600">职位名称</Label>
@@ -146,7 +153,7 @@ export default function JobInputPage() {
                   <Textarea
                     value={jobText}
                     onChange={(e) => setJobText(e.target.value)}
-                    placeholder="粘贴完整的职位描述——包括岗位要求、职责以及技术关键词..."
+                    placeholder="请粘贴完整的职位描述，包括岗位职责、任职要求、加分项等内容。"
                     className="min-h-[280px] resize-none text-sm leading-relaxed"
                   />
                   <p className="text-xs text-gray-400">{jobText.split(/\s+/).filter(Boolean).length} 词</p>
@@ -189,7 +196,7 @@ export default function JobInputPage() {
               <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-sm font-semibold text-gray-900">接下来会发生什么？</p>
-                <p className="text-xs text-gray-500 mt-0.5">我们将提取关键词、岗位要求和 ATS 术语，并生成与您档案的匹配分数。</p>
+                <p className="text-xs text-gray-500 mt-0.5">系统会先分析 JD，再把这次申请作为一个求职项目，继续推进简历定制和面试准备。</p>
               </div>
             </div>
           </div>
@@ -208,7 +215,7 @@ export default function JobInputPage() {
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  分析职位描述
+                  创建并分析项目
                 </>
               )}
             </Button>

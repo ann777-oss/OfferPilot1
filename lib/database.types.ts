@@ -133,6 +133,16 @@ export interface Database {
           analysis: Json;
           match_score: number;
           status: string;
+          applied_at: string | null;
+          application_channel: string | null;
+          application_notes: string | null;
+          offer_salary: string | null;
+          offer_city: string | null;
+          offer_department: string | null;
+          offer_work_mode: string | null;
+          offer_conversion_opportunity: boolean | null;
+          offer_reply_deadline: string | null;
+          offer_notes: string | null;
           created_at: string;
           updated_at: string;
         };

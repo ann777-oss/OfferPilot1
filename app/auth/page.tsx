@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Sparkles, Eye, EyeOff, CircleAlert as AlertCircle } from 'lucide-react';
+import { CircleAlert as AlertCircle, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,22 +26,34 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (user) router.push('/dashboard');
-  }, [user, router]);
+  }, [router, user]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError('');
     setLoading(true);
 
     try {
       if (mode === 'signup') {
-        if (!fullName.trim()) { setError('请填写姓名。'); setLoading(false); return; }
+        if (!fullName.trim()) {
+          setError('请填写姓名。');
+          setLoading(false);
+          return;
+        }
         const { error } = await signUp(email, password, fullName);
-        if (error) { setError(error.message); setLoading(false); return; }
+        if (error) {
+          setError(error.message);
+          setLoading(false);
+          return;
+        }
         router.push('/dashboard');
       } else {
         const { error } = await signIn(email, password);
-        if (error) { setError(error.message); setLoading(false); return; }
+        if (error) {
+          setError(error.message);
+          setLoading(false);
+          return;
+        }
         router.push('/dashboard');
       }
     } finally {
@@ -50,30 +62,30 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-blue-600 items-center justify-center p-12">
+    <div className="flex min-h-screen bg-gray-50">
+      <div className="hidden items-center justify-center bg-blue-600 p-12 lg:flex lg:w-1/2">
         <div className="max-w-sm text-white">
-          <div className="flex items-center gap-2.5 mb-12">
-            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+          <div className="mb-12 flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
+              <Sparkles className="h-4 w-4 text-white" />
             </div>
-            <span className="font-bold text-lg">ResumeTailor AI</span>
+            <span className="text-lg font-bold">OfferPilot</span>
           </div>
-          <h2 className="text-3xl font-bold mb-4 leading-snug">
-            您的职业档案，为每次机会量身定制。
+          <h2 className="mb-4 text-3xl font-bold leading-snug">
+            把每一次岗位申请，都推进成清晰的求职项目。
           </h2>
-          <p className="text-blue-100 mb-8 leading-relaxed text-sm">
-            一次创建核心档案，让 AI 为每个岗位打造真正脱颖而出的定制简历——仅使用您的真实经历。
+          <p className="mb-8 text-sm leading-relaxed text-blue-100">
+            从职业档案、JD 分析、定制简历，到面试准备、复盘和 Offer 对比，OfferPilot 帮你持续管理完整求职流程。
           </p>
           <div className="space-y-3">
             {[
-              '一份核心档案，无限量定制简历',
-              '每次导出均完成 ATS 关键词优化',
-              '绝不虚构——仅基于真实经历',
-              '秒级导出整洁 PDF',
+              '以求职项目为中心管理每个岗位',
+              '基于真实经历生成岗位专属简历',
+              '统一沉淀面试准备和复盘记录',
+              '记录并对比 Offer 关键信息',
             ].map((item) => (
               <div key={item} className="flex items-center gap-2.5 text-sm text-blue-100">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-300 flex-shrink-0" />
+                <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-300" />
                 {item}
               </div>
             ))}
@@ -81,38 +93,38 @@ export default function AuthPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex flex-1 items-center justify-center p-8">
         <div className="w-full max-w-sm">
-          <div className="lg:hidden flex items-center gap-2 mb-8">
+          <div className="mb-8 flex items-center gap-2 lg:hidden">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-3.5 h-3.5 text-white" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600">
+                <Sparkles className="h-3.5 w-3.5 text-white" />
               </div>
-              <span className="font-bold text-gray-900">ResumeTailor <span className="text-blue-600">AI</span></span>
+              <span className="font-bold text-gray-900">OfferPilot</span>
             </Link>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            <h1 className="mb-1 text-2xl font-bold text-gray-900">
               {mode === 'signin' ? '欢迎回来' : '创建账户'}
             </h1>
             <p className="text-sm text-gray-500">
-              {mode === 'signin'
-                ? '登录后访问您的简历档案。'
-                : '开始创建您的职业核心档案。'}
+              {mode === 'signin' ? '登录后继续推进你的求职项目。' : '开始建立你的求职工作台。'}
             </p>
           </div>
 
-          <div className="flex gap-1 p-1 bg-gray-100 rounded-lg mb-6">
+          <div className="mb-6 flex gap-1 rounded-lg bg-gray-100 p-1">
             <button
+              type="button"
               onClick={() => setMode('signin')}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${mode === 'signin' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`flex-1 rounded-md py-2 text-sm font-medium transition-all ${mode === 'signin' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
             >
               登录
             </button>
             <button
+              type="button"
               onClick={() => setMode('signup')}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${mode === 'signup' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`flex-1 rounded-md py-2 text-sm font-medium transition-all ${mode === 'signup' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
             >
               注册
             </button>
@@ -125,9 +137,9 @@ export default function AuthPage() {
                 <Input
                   id="fullName"
                   type="text"
-                  placeholder="请输入您的姓名"
+                  placeholder="请输入你的姓名"
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  onChange={(event) => setFullName(event.target.value)}
                   required={mode === 'signup'}
                   className="h-11"
                 />
@@ -141,7 +153,7 @@ export default function AuthPage() {
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(event) => setEmail(event.target.value)}
                 required
                 className="h-11"
               />
@@ -153,9 +165,9 @@ export default function AuthPage() {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder={mode === 'signup' ? '至少 8 个字符' : '••••••••'}
+                  placeholder={mode === 'signup' ? '至少 8 个字符' : '请输入密码'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(event) => setPassword(event.target.value)}
                   required
                   minLength={mode === 'signup' ? 8 : undefined}
                   className="h-11 pr-10"
@@ -165,14 +177,14 @@ export default function AuthPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
             {error && (
-              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600">
-                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">
+                <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
                 <span>{error}</span>
               </div>
             )}
@@ -180,11 +192,11 @@ export default function AuthPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+              className="h-11 w-full bg-blue-600 font-medium text-white hover:bg-blue-700"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   {mode === 'signin' ? '登录中...' : '注册中...'}
                 </span>
               ) : (
@@ -193,14 +205,14 @@ export default function AuthPage() {
             </Button>
           </form>
 
-          <p className="text-xs text-gray-400 text-center mt-6">
+          <p className="mt-6 text-center text-xs text-gray-400">
             {mode === 'signup'
-              ? '注册即表示您同意我们的服务条款和隐私政策。'
-              : '忘记密码？请联系客服。'}
+              ? '注册即表示你同意我们的服务条款和隐私政策。'
+              : '忘记密码？请联系管理员或客服。'}
           </p>
 
           <div className="mt-4 text-center text-sm text-gray-500">
-            <Link href="/" className="text-blue-600 hover:underline">← 返回首页</Link>
+            <Link href="/" className="text-blue-600 hover:underline">返回首页</Link>
           </div>
         </div>
       </div>

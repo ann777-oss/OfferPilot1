@@ -118,9 +118,28 @@ export interface JobDescription {
   analysis: JobAnalysis;
   match_score: number;
   status: string;
+  applied_at?: string | null;
+  application_channel?: string;
+  application_notes?: string;
+  offer_salary?: string;
+  offer_city?: string;
+  offer_department?: string;
+  offer_work_mode?: string;
+  offer_conversion_opportunity?: boolean;
+  offer_reply_deadline?: string | null;
+  offer_notes?: string;
   created_at: string;
   updated_at: string;
 }
+
+export type ProjectStatus =
+  | 'analyzed'
+  | 'resume_ready'
+  | 'applied'
+  | 'interviewing'
+  | 'offer'
+  | 'rejected'
+  | 'archived';
 
 export interface ResumeContent {
   core_keywords?: string[];
@@ -246,7 +265,10 @@ export interface ResumeVersion {
   updated_at: string;
 }
 
-export type BoardStatus = 'draft' | 'pending' | 'applied' | 'interviewing' | 'archived';
+export type BoardStatus = 'draft' | 'pending' | 'applied' | 'hr_interview' | 'technical_interview' | 'final_interview' | 'offer' | 'rejected' | 'archived';
+
+// 保留旧的 'interviewing' 状态以兼容现有数据
+export type LegacyBoardStatus = BoardStatus | 'interviewing';
 
 export interface ResumeEvent {
   id: string;
@@ -284,3 +306,82 @@ export interface MasterProfile {
   links: ProfileLink[];
   campusActivities: CampusActivity[];
 }
+
+// 面试准备材料
+export interface InterviewQuestion {
+  question: string;
+  answer: string;
+  type: 'common' | 'technical' | 'behavioral' | 'reverse';
+  tips?: string;
+}
+
+export interface InterviewPackContent {
+  common_questions: InterviewQuestion[];
+  technical_questions: InterviewQuestion[];
+  behavioral_questions: InterviewQuestion[];
+  reverse_questions: string[];
+  company_background: string;
+}
+
+export interface InterviewPack {
+  id: string;
+  user_id: string;
+  resume_version_id: string | null;
+  job_description_id: string | null;
+  content: InterviewPackContent;
+  created_at: string;
+  updated_at: string;
+}
+
+// 面试复盘记录
+export interface InterviewQuestionRecord {
+  question: string;
+  my_answer: string;
+  feedback?: string;
+  rating?: number; // 1-5
+}
+
+export interface InterviewRecord {
+  id: string;
+  user_id: string;
+  resume_version_id: string | null;
+  company_name: string;
+  interview_date: string;
+  interview_type: 'phone' | 'technical' | 'hr' | 'final' | 'other';
+  questions: InterviewQuestionRecord[];
+  overall_rating: number; // 1-5
+  improvements: string[];
+  notes: string;
+  status: 'draft' | 'completed'; // 草稿或已完成
+  created_at: string;
+  updated_at: string;
+}
+
+// 扩展 ResumeEvent 类型
+export interface ExtendedResumeEvent extends ResumeEvent {
+  interview_date?: string;
+  hr_contact?: string;
+  application_channel?: string;
+  notes?: string;
+}
+
+// 求职项目相关类型
+export interface ProjectProgress {
+  hasResume: boolean;
+  resumeId: string | null;
+  hasInterviewPrep: boolean;
+  interviewPrepId: string | null;
+  hasInterviewRecord: boolean;
+  interviewRecordId: string | null;
+  hasOffer: boolean;
+  completedSteps: number; // 0-4
+}
+
+export interface JobProject {
+  job: JobDescription;
+  resumes: ResumeVersion[];
+  interviewPacks: InterviewPack[];
+  interviewRecords: InterviewRecord[];
+  progress: ProjectProgress;
+}
+

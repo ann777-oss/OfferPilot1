@@ -7,8 +7,8 @@ import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ResumeTailor AI — 秒级生成岗位专属简历',
-  description: '基于您的职业核心档案，使用 AI 生成 ATS 优化的定制简历。',
+  title: 'OfferPilot — 全流程求职陪伴助手',
+  description: '围绕每个求职项目，管理职业档案、JD 分析、定制简历、面试准备、复盘和 Offer 对比。',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

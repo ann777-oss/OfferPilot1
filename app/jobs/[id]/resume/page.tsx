@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, Download, Save, Star, CircleCheck as CheckCircle2, CreditCard as Edit3, Eye, FileText, SlidersHorizontal } from 'lucide-react';
+import { ChevronLeft, Download, Save, Star, CircleCheck as CheckCircle2, CreditCard as Edit3, Eye, FileText, SlidersHorizontal, BookOpen } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import ResumePreviewCanvas from '@/components/resume/ResumePreviewCanvas';
@@ -119,7 +119,7 @@ export default function ResumePage() {
       <div className="p-8 max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Link href={`/jobs/${id}/analysis`} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+            <Link href={`/jobs/${id}`} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
               <ChevronLeft className="w-4 h-4" />返回分析
             </Link>
             <span className="text-gray-300">/</span>
@@ -129,6 +129,19 @@ export default function ResumePage() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            {/* 面试准备按钮 */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (!resumeId) return;
+                router.push(`/resumes/${resumeId}/interview-prep`);
+              }}
+              className="gap-1.5"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              面试准备
+            </Button>
             <Button variant="ghost" size="sm" onClick={handleToggleStar} className={`gap-1.5 ${starred ? 'text-amber-500' : 'text-gray-400'}`}>
               <Star className={`w-4 h-4 ${starred ? 'fill-amber-400' : ''}`} />
               {starred ? '已收藏' : '收藏'}
