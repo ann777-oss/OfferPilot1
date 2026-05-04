@@ -106,7 +106,13 @@ export default function ResumeDetailPage() {
     );
   }
 
-  if (!resume) return <AppLayout><div className="p-8 text-gray-500">简历不存在。</div></AppLayout>;
+  if (!resume) {
+    return (
+      <AppLayout>
+        <div className="p-8 text-gray-500">简历不存在。</div>
+      </AppLayout>
+    );
+  }
 
   const content = resume.content as unknown as ResumeContent;
 
