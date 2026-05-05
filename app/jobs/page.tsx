@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, Briefcase, CirclePlus as PlusCircle, LayoutGrid, List, Search, Target, Trash2 } from 'lucide-react';
@@ -43,6 +43,23 @@ function normalizeProjectStatus(status?: string): ProjectStatus {
 }
 
 export default function JobsPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout>
+          <div className="p-8 max-w-7xl mx-auto">
+            <div className="h-8 w-48 bg-gray-100 rounded animate-pulse mb-6" />
+            <div className="h-96 bg-gray-100 rounded-xl animate-pulse" />
+          </div>
+        </AppLayout>
+      }
+    >
+      <JobsPageContent />
+    </Suspense>
+  );
+}
+
+function JobsPageContent() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();

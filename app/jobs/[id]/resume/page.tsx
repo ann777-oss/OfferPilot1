@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, Download, Save, Star, CircleCheck as CheckCircle2, CreditCard as Edit3, Eye, FileText, SlidersHorizontal, BookOpen } from 'lucide-react';
@@ -15,6 +15,23 @@ import { supabase } from '@/lib/supabase';
 import type { ResumeVersion, ResumeContent, ResumeDesignSettings } from '@/lib/types';
 
 export default function ResumePage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout>
+          <div className="p-8 max-w-6xl mx-auto">
+            <div className="h-8 w-48 bg-gray-100 rounded animate-pulse mb-6" />
+            <div className="h-[800px] bg-gray-100 rounded-xl animate-pulse" />
+          </div>
+        </AppLayout>
+      }
+    >
+      <ResumePageContent />
+    </Suspense>
+  );
+}
+
+function ResumePageContent() {
   const { id } = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const resumeId = searchParams.get('resumeId');
