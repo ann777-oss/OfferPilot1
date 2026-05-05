@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, Plus, Trash2, Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Plus, Sparkles, Trash2 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
+import PageBreadcrumb from '@/components/common/PageBreadcrumb';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -16,24 +16,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase';
 import { analyzeInterviewFeedback } from '@/lib/services/interview';
+import { supabase } from '@/lib/supabase';
 import type { InterviewQuestionRecord, InterviewRecord } from '@/lib/types';
 
+type ProjectContext = {
+  jobId: string;
+  companyName: string;
+  jobTitle: string;
+};
+
 export default function EditInterviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout>
+          <div className="p-8 max-w-4xl mx-auto">
+            <div className="h-8 w-48 bg-gray-100 rounded animate-pulse mb-6" />
+            <div className="h-96 bg-gray-100 rounded-xl animate-pulse" />
+          </div>
+        </AppLayout>
+      }
+    >
+      <EditInterviewContent />
+    </Suspense>
+  );
+}
+
+function EditInterviewContent() {
   const { id } = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+  const [projectContext, setProjectContext] = useState<ProjectContext | null>(null);
   const [companyName, setCompanyName] = useState('');
   const [interviewDate, setInterviewDate] = useState('');
   const [interviewType, setInterviewType] = useState<string>('technical');
   const [questions, setQuestions] = useState<InterviewQuestionRecord[]>([
-    { question: '', my_answer: '', feedback: '', rating: undefined }
+    { question: '', my_answer: '', feedback: '', rating: undefined },
   ]);
   const [overallRating, setOverallRating] = useState<number>(3);
   const [notes, setNotes] = useState('');
@@ -57,6 +83,7 @@ export default function EditInterviewPage() {
         .eq('user_id', user!.id)
         .maybeSingle();
 
+      if (error) throw error;
       if (!data) {
         toast({ title: '记录不存在', variant: 'destructive' });
         router.push('/interviews');
@@ -71,12 +98,78 @@ export default function EditInterviewPage() {
       setOverallRating(record.overall_rating);
       setNotes(record.notes || '');
       setAiImprovements(record.improvements || []);
+      await loadProjectContext(record);
     } catch (error: any) {
       toast({ title: '加载失败', description: error.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
+
+  const loadProjectContext = async (record: InterviewRecord) => {
+    const jobIdFromUrl = searchParams.get('jobId');
+
+    if (jobIdFromUrl) {
+      const { data: job } = await supabase
+        .from('job_descriptions')
+        .select('id, company_name, job_title')
+        .eq('id', jobIdFromUrl)
+        .maybeSingle();
+
+      if (job) {
+        setProjectContext({ jobId: job.id, companyName: job.company_name, jobTitle: job.job_title });
+        return;
+      }
+    }
+
+    if (!record.resume_version_id) return;
+
+    const { data: resume } = await supabase
+      .from('resume_versions')
+      .select('job_description_id')
+      .eq('id', record.resume_version_id)
+      .maybeSingle();
+
+    if (!resume?.job_description_id) return;
+
+    const { data: job } = await supabase
+      .from('job_descriptions')
+      .select('id, company_name, job_title')
+      .eq('id', resume.job_description_id)
+      .maybeSingle();
+
+    if (job) {
+      setProjectContext({ jobId: job.id, companyName: job.company_name, jobTitle: job.job_title });
+    }
+  };
+
+  const returnTarget = useMemo(() => {
+    const source = searchParams.get('from');
+    if (source === 'interviews') {
+      return { href: '/interviews', label: '返回面试中心', fromProject: false };
+    }
+    if (source === 'project' && projectContext) {
+      return { href: `/jobs/${projectContext.jobId}`, label: '返回求职项目', fromProject: true };
+    }
+    if (projectContext) {
+      return { href: `/jobs/${projectContext.jobId}`, label: '返回求职项目', fromProject: true };
+    }
+    return { href: '/interviews', label: '返回面试中心', fromProject: false };
+  }, [projectContext, searchParams]);
+
+  const reviewUrl = useMemo(() => {
+    const source = searchParams.get('from');
+    if (source === 'project' && projectContext) {
+      return `/interviews/${id}/review?from=project&jobId=${projectContext.jobId}`;
+    }
+    if (source === 'interviews') {
+      return `/interviews/${id}/review?from=interviews`;
+    }
+    if (projectContext) {
+      return `/interviews/${id}/review?from=project&jobId=${projectContext.jobId}`;
+    }
+    return `/interviews/${id}/review?from=interviews`;
+  }, [id, projectContext, searchParams]);
 
   const handleAddQuestion = () => {
     setQuestions([...questions, { question: '', my_answer: '', feedback: '', rating: undefined }]);
@@ -87,9 +180,9 @@ export default function EditInterviewPage() {
   };
 
   const handleQuestionChange = (index: number, field: keyof InterviewQuestionRecord, value: any) => {
-    const newQuestions = [...questions];
-    newQuestions[index] = { ...newQuestions[index], [field]: value };
-    setQuestions(newQuestions);
+    const nextQuestions = [...questions];
+    nextQuestions[index] = { ...nextQuestions[index], [field]: value };
+    setQuestions(nextQuestions);
   };
 
   const handleAnalyze = async () => {
@@ -100,21 +193,11 @@ export default function EditInterviewPage() {
 
     setAnalyzing(true);
     try {
-      const { analysis, improvements } = await analyzeInterviewFeedback(
-        questions,
-        companyName,
-        interviewType,
-        ''
-      );
-
+      const { improvements } = await analyzeInterviewFeedback(questions, companyName, interviewType, '');
       setAiImprovements(improvements);
-      toast({ title: 'AI分析完成！' });
+      toast({ title: 'AI 分析完成' });
     } catch (error: any) {
-      toast({
-        title: 'AI分析失败',
-        description: error.message,
-        variant: 'destructive'
-      });
+      toast({ title: 'AI 分析失败', description: error.message, variant: 'destructive' });
     } finally {
       setAnalyzing(false);
     }
@@ -146,14 +229,10 @@ export default function EditInterviewPage() {
 
       if (error) throw error;
 
-      toast({ title: '面试复盘已保存！' });
-      router.push(`/interviews/${id}/review`);
+      toast({ title: '面试复盘已保存' });
+      router.push(reviewUrl);
     } catch (error: any) {
-      toast({
-        title: '保存失败',
-        description: error.message,
-        variant: 'destructive'
-      });
+      toast({ title: '保存失败', description: error.message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -170,25 +249,34 @@ export default function EditInterviewPage() {
     );
   }
 
+  const breadcrumbItems = returnTarget.fromProject && projectContext
+    ? [
+        { label: '工作台', href: '/dashboard' },
+        { label: '求职项目', href: `/jobs/${projectContext.jobId}` },
+        { label: '填写面试复盘' },
+      ]
+    : [
+        { label: '工作台', href: '/dashboard' },
+        { label: '面试中心', href: '/interviews' },
+        { label: '填写面试复盘' },
+      ];
+
   return (
     <AppLayout>
       <div className="p-8 max-w-4xl mx-auto">
+        <PageBreadcrumb items={breadcrumbItems} />
+
         <div className="mb-6">
-          <Link
-            href="/interviews"
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            返回面试记录
+          <Link href={returnTarget.href} className="mb-4 inline-flex text-sm text-blue-600 hover:underline">
+            {returnTarget.label}
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">填写面试复盘</h1>
           <p className="text-gray-500">
-            记录面试问题和你的回答，AI将帮你分析并给出改进建议
+            记录面试问题和你的回答，AI 将帮助你分析表现并给出改进建议。
           </p>
         </div>
 
         <div className="space-y-6">
-          {/* 基本信息 */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="text-base font-semibold text-gray-900 mb-4">基本信息</h3>
             <div className="space-y-4">
@@ -226,8 +314,8 @@ export default function EditInterviewPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="phone">电话面试</SelectItem>
-                    <SelectItem value="technical">技术面试</SelectItem>
-                    <SelectItem value="hr">HR面试</SelectItem>
+                    <SelectItem value="technical">专业面试</SelectItem>
+                    <SelectItem value="hr">HR 面试</SelectItem>
                     <SelectItem value="final">终面</SelectItem>
                     <SelectItem value="other">其他</SelectItem>
                   </SelectContent>
@@ -236,12 +324,11 @@ export default function EditInterviewPage() {
             </div>
           </div>
 
-          {/* 面试问题 */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-base font-semibold text-gray-900">面试问题</h3>
-                <p className="text-sm text-gray-500 mt-1">记录面试官的问题和你的回答</p>
+                <p className="text-sm text-gray-500 mt-1">记录面试官的问题和你的回答。</p>
               </div>
               <Button onClick={handleAddQuestion} size="sm" variant="outline">
                 <Plus className="w-4 h-4 mr-2" />
@@ -249,7 +336,7 @@ export default function EditInterviewPage() {
               </Button>
             </div>
             <div className="space-y-4">
-              {questions.map((q, index) => (
+              {questions.map((question, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium text-gray-900">问题 {index + 1}</h4>
@@ -267,7 +354,7 @@ export default function EditInterviewPage() {
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-gray-700">问题内容</Label>
                     <Input
-                      value={q.question}
+                      value={question.question}
                       onChange={(e) => handleQuestionChange(index, 'question', e.target.value)}
                       placeholder="面试官问了什么？"
                       className="border-gray-300"
@@ -276,7 +363,7 @@ export default function EditInterviewPage() {
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-gray-700">我的回答</Label>
                     <Textarea
-                      value={q.my_answer}
+                      value={question.my_answer}
                       onChange={(e) => handleQuestionChange(index, 'my_answer', e.target.value)}
                       placeholder="你是怎么回答的？"
                       rows={4}
@@ -287,7 +374,7 @@ export default function EditInterviewPage() {
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">面试官反馈（可选）</Label>
                       <Input
-                        value={q.feedback || ''}
+                        value={question.feedback || ''}
                         onChange={(e) => handleQuestionChange(index, 'feedback', e.target.value)}
                         placeholder="面试官有什么反馈？"
                         className="border-gray-300"
@@ -296,18 +383,18 @@ export default function EditInterviewPage() {
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">自我评分（可选）</Label>
                       <Select
-                        value={q.rating?.toString() || ''}
-                        onValueChange={(v) => handleQuestionChange(index, 'rating', parseInt(v))}
+                        value={question.rating?.toString() || ''}
+                        onValueChange={(value) => handleQuestionChange(index, 'rating', parseInt(value))}
                       >
                         <SelectTrigger className="border-gray-300">
                           <SelectValue placeholder="选择评分" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="5">5分 - 非常好</SelectItem>
-                          <SelectItem value="4">4分 - 较好</SelectItem>
-                          <SelectItem value="3">3分 - 一般</SelectItem>
-                          <SelectItem value="2">2分 - 较差</SelectItem>
-                          <SelectItem value="1">1分 - 很差</SelectItem>
+                          <SelectItem value="5">5 分 - 非常好</SelectItem>
+                          <SelectItem value="4">4 分 - 较好</SelectItem>
+                          <SelectItem value="3">3 分 - 一般</SelectItem>
+                          <SelectItem value="2">2 分 - 较差</SelectItem>
+                          <SelectItem value="1">1 分 - 很差</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -317,25 +404,21 @@ export default function EditInterviewPage() {
             </div>
           </div>
 
-          {/* 整体评价 */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="text-base font-semibold text-gray-900 mb-4">整体评价</h3>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">整体表现评分</Label>
-                <Select
-                  value={overallRating.toString()}
-                  onValueChange={(v) => setOverallRating(parseInt(v))}
-                >
+                <Select value={overallRating.toString()} onValueChange={(value) => setOverallRating(parseInt(value))}>
                   <SelectTrigger className="border-gray-300">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="5">5分 - 非常好</SelectItem>
-                    <SelectItem value="4">4分 - 较好</SelectItem>
-                    <SelectItem value="3">3分 - 一般</SelectItem>
-                    <SelectItem value="2">2分 - 较差</SelectItem>
-                    <SelectItem value="1">1分 - 很差</SelectItem>
+                    <SelectItem value="5">5 分 - 非常好</SelectItem>
+                    <SelectItem value="4">4 分 - 较好</SelectItem>
+                    <SelectItem value="3">3 分 - 一般</SelectItem>
+                    <SelectItem value="2">2 分 - 较差</SelectItem>
+                    <SelectItem value="1">1 分 - 很差</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -352,15 +435,14 @@ export default function EditInterviewPage() {
             </div>
           </div>
 
-          {/* AI改进建议 */}
           {aiImprovements.length > 0 && (
             <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-base font-semibold text-gray-900 mb-4">AI改进建议</h3>
+              <h3 className="text-base font-semibold text-gray-900 mb-4">AI 改进建议</h3>
               <ul className="space-y-2">
-                {aiImprovements.map((improvement, i) => (
-                  <li key={i} className="flex items-start">
+                {aiImprovements.map((improvement, index) => (
+                  <li key={index} className="flex items-start">
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm font-medium mr-3 flex-shrink-0 mt-0.5">
-                      {i + 1}
+                      {index + 1}
                     </span>
                     <span className="text-gray-900">{improvement}</span>
                   </li>
@@ -369,22 +451,17 @@ export default function EditInterviewPage() {
             </div>
           )}
 
-          {/* 操作按钮 */}
           <div className="flex items-center justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={handleAnalyze}
-              disabled={analyzing || !companyName || questions.length === 0}
-            >
+            <Button variant="outline" onClick={handleAnalyze} disabled={analyzing || !companyName || questions.length === 0}>
               {analyzing ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  AI分析中...
+                  AI 分析中...
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  AI分析
+                  AI 分析
                 </>
               )}
             </Button>

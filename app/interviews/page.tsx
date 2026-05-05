@@ -269,7 +269,7 @@ function InterviewPackCard({ pack }: { pack: InterviewPackWithDetails }) {
 
 function RecordCard({ record, isDraft }: { record: InterviewRecord; isDraft: boolean }) {
   return (
-    <Link href={isDraft ? `/interviews/${record.id}/edit` : `/interviews/${record.id}/review`}>
+    <Link href={isDraft ? `/interviews/${record.id}/edit?from=interviews` : `/interviews/${record.id}/review?from=interviews`}>
       <div className="cursor-pointer rounded-xl border border-gray-200 bg-white p-5 transition-all hover:border-gray-300 hover:shadow-md">
         <div className="mb-3 flex items-start justify-between">
           <div className="flex-1">

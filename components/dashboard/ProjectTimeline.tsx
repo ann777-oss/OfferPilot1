@@ -57,8 +57,8 @@ export default function ProjectTimeline({ jobId, progress }: ProjectTimelineProp
         if (progress.interviewRecordId) {
           const target =
             progress.interviewRecordStatus === 'completed'
-              ? `/interviews/${progress.interviewRecordId}/review`
-              : `/interviews/${progress.interviewRecordId}/edit`;
+              ? `/interviews/${progress.interviewRecordId}/review?from=project&jobId=${jobId}`
+              : `/interviews/${progress.interviewRecordId}/edit?from=project&jobId=${jobId}`;
           router.push(target);
           return;
         }

@@ -103,9 +103,10 @@ function getNextAction(project: JobProject) {
   };
 }
 
-function getInterviewRecordLink(record: InterviewRecord | undefined) {
+function getInterviewRecordLink(record: InterviewRecord | undefined, jobId: string) {
   if (!record) return '/interviews';
-  return record.status === 'completed' ? `/interviews/${record.id}/review` : `/interviews/${record.id}/edit`;
+  const params = `from=project&jobId=${jobId}`;
+  return record.status === 'completed' ? `/interviews/${record.id}/review?${params}` : `/interviews/${record.id}/edit?${params}`;
 }
 
 export default function JobProjectPage() {
@@ -534,7 +535,7 @@ export default function JobProjectPage() {
                 <MessageSquare className="h-4 w-4 text-amber-500" />
                 面试记录
               </p>
-              <Button variant="ghost" size="sm" onClick={() => router.push(getInterviewRecordLink(latestInterviewRecord ?? undefined))}>
+              <Button variant="ghost" size="sm" onClick={() => router.push(getInterviewRecordLink(latestInterviewRecord ?? undefined, project.job.id))}>
                 {latestInterviewRecord ? '查看' : '填写'}
               </Button>
             </div>

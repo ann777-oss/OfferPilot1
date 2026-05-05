@@ -104,7 +104,7 @@ export default function NewInterviewPage() {
       );
 
       toast({ title: '面试复盘已保存！' });
-      router.push(`/interviews/${record.id}/review`);
+      router.push(`/interviews/${record.id}/review?from=interviews`);
     } catch (error: any) {
       toast({
         title: '保存失败',
