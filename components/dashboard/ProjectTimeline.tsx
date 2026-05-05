@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { BadgeCheck, BookOpen, CheckCircle, FileText, MessageSquare } from 'lucide-react';
+import { BadgeCheck, BookOpen, Check, FileText, MessageSquare } from 'lucide-react';
 import type { ProjectProgress } from '@/lib/types';
 
 interface ProjectTimelineProps {
@@ -21,9 +21,10 @@ export default function ProjectTimeline({ jobId, progress }: ProjectTimelineProp
       onClick: () => {
         if (progress.hasResume && progress.resumeId) {
           router.push(`/resumes/${progress.resumeId}`);
-        } else {
-          router.push(`/jobs/${jobId}/analysis`);
+          return;
         }
+
+        router.push(`/jobs/${jobId}/analysis`);
       },
     },
     {
@@ -36,6 +37,7 @@ export default function ProjectTimeline({ jobId, progress }: ProjectTimelineProp
           alert('请先生成项目简历');
           return;
         }
+
         if (progress.resumeId) {
           router.push(`/resumes/${progress.resumeId}/interview-prep`);
         }
@@ -51,11 +53,17 @@ export default function ProjectTimeline({ jobId, progress }: ProjectTimelineProp
           alert('请先生成面试准备材料');
           return;
         }
-        if (progress.hasInterviewRecord && progress.interviewRecordId) {
-          router.push(`/interviews/${progress.interviewRecordId}/review`);
-        } else {
-          router.push('/interviews');
+
+        if (progress.interviewRecordId) {
+          const target =
+            progress.interviewRecordStatus === 'completed'
+              ? `/interviews/${progress.interviewRecordId}/review`
+              : `/interviews/${progress.interviewRecordId}/edit`;
+          router.push(target);
+          return;
         }
+
+        alert('当前项目还没有面试复盘草稿，请先从面试准备页生成准备材料。');
       },
     },
     {
@@ -91,18 +99,19 @@ export default function ProjectTimeline({ jobId, progress }: ProjectTimelineProp
 
                 <button onClick={step.onClick} className="group relative z-10 flex w-28 flex-col items-center">
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 bg-white transition-all group-hover:scale-110 ${
+                    className={`relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all group-hover:scale-110 ${
                       isCompleted
                         ? 'border-blue-600 bg-blue-600'
                         : isNext
-                          ? 'border-blue-600'
-                          : 'border-gray-300'
+                          ? 'border-blue-600 bg-white'
+                          : 'border-gray-300 bg-white'
                     }`}
                   >
-                    {isCompleted ? (
-                      <CheckCircle className="h-5 w-5 text-white" />
-                    ) : (
-                      <Icon className={`h-5 w-5 ${isNext ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <Icon className={`h-5 w-5 ${isCompleted ? 'text-white' : isNext ? 'text-blue-600' : 'text-gray-400'}`} />
+                    {isCompleted && (
+                      <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border border-white bg-emerald-500">
+                        <Check className="h-2.5 w-2.5 text-white" />
+                      </span>
                     )}
                   </div>
 

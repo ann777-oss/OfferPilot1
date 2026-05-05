@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Code, Plus, X, Save } from 'lucide-react';
+import { Code, Plus, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import SectionCard from './SectionCard';
 import { supabase } from '@/lib/supabase';
 import type { Skill } from '@/lib/types';
+import SectionCard from './SectionCard';
 
 interface Props {
   userId: string;
@@ -57,14 +57,15 @@ export default function SkillsSection({ userId, skills, onSaved }: Props) {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const grouped = skills.reduce<Record<string, Skill[]>>((acc, skill) => {
-    const cat = skill.category || '其他';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(skill);
+    const category = skill.category || '其他';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(skill);
     return acc;
   }, {});
 
   const handleAdd = async () => {
     if (!newSkill.name.trim()) return;
+
     setSaving(true);
     await supabase.from('skills').insert({ ...newSkill, user_id: userId, sort_order: skills.length });
     setNewSkill(DEFAULT_SKILL);
@@ -85,7 +86,7 @@ export default function SkillsSection({ userId, skills, onSaved }: Props) {
       <SectionCard
         icon={Code}
         title="技能"
-        description="您希望重点展示的证书、工具、专业能力与软技能"
+        description="你希望重点展示的证书、工具、专业能力与软技能。"
         action={
           <Button
             size="sm"
@@ -100,7 +101,7 @@ export default function SkillsSection({ userId, skills, onSaved }: Props) {
       >
         {adding && (
           <div className="mb-5 p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-3">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium text-gray-600">技能名称</Label>
                 <Input
@@ -113,7 +114,7 @@ export default function SkillsSection({ userId, skills, onSaved }: Props) {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium text-gray-600">分类</Label>
-                <Select value={newSkill.category} onValueChange={(v) => setNewSkill({ ...newSkill, category: v })}>
+                <Select value={newSkill.category} onValueChange={(value) => setNewSkill({ ...newSkill, category: value })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((category) => (
@@ -124,7 +125,7 @@ export default function SkillsSection({ userId, skills, onSaved }: Props) {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium text-gray-600">熟练程度</Label>
-                <Select value={newSkill.proficiency} onValueChange={(v) => setNewSkill({ ...newSkill, proficiency: v })}>
+                <Select value={newSkill.proficiency} onValueChange={(value) => setNewSkill({ ...newSkill, proficiency: value })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {PROFICIENCY.map((proficiency) => (
@@ -145,13 +146,15 @@ export default function SkillsSection({ userId, skills, onSaved }: Props) {
 
         {skills.length === 0 ? (
           <div className="py-8 text-center text-sm text-gray-400">
-            暂无技能。点击「添加技能」开始添加。
+            暂无技能。点击“添加技能”开始添加。
           </div>
         ) : (
           <div className="space-y-4">
             {Object.entries(grouped).map(([category, catSkills]) => (
               <div key={category}>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{getCategoryLabel(category)}</p>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                  {getCategoryLabel(category)}
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {catSkills.map((skill) => (
                     <div key={skill.id} className="group flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
@@ -161,6 +164,7 @@ export default function SkillsSection({ userId, skills, onSaved }: Props) {
                         onClick={() => handleDelete(skill.id)}
                         disabled={deleting === skill.id}
                         className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all ml-0.5"
+                        aria-label={`删除技能 ${skill.name}`}
                       >
                         <X className="w-3 h-3" />
                       </button>

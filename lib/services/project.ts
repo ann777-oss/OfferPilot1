@@ -18,6 +18,7 @@ export function calculateProjectProgress(
   const hasResume = resumes.length > 0;
   const hasInterviewPrep = interviewPacks.length > 0;
   const hasInterviewRecord = interviewRecords.some(r => r.status === 'completed');
+  const latestInterviewRecord = interviewRecords[0] ?? null;
   const hasOffer = Boolean(
     job?.status === 'offer' ||
     job?.offer_salary ||
@@ -35,7 +36,8 @@ export function calculateProjectProgress(
     hasInterviewPrep,
     interviewPrepId: interviewPacks[0]?.id || null,
     hasInterviewRecord,
-    interviewRecordId: interviewRecords.find(r => r.status === 'completed')?.id || null,
+    interviewRecordId: latestInterviewRecord?.id || null,
+    interviewRecordStatus: latestInterviewRecord?.status || null,
     hasOffer,
     completedSteps: [hasResume, hasInterviewPrep, hasInterviewRecord, hasOffer].filter(Boolean).length
   };

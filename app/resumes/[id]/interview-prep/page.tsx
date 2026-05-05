@@ -1,27 +1,36 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, Sparkles, BookOpen, Code, Users, HelpCircle, Building } from 'lucide-react';
+import {
+  BookOpen,
+  Building,
+  Code,
+  HelpCircle,
+  Loader2,
+  Sparkles,
+  Users,
+} from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
+import PageBreadcrumb from '@/components/common/PageBreadcrumb';
 import { Button } from '@/components/ui/button';
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import {
+  createDraftInterviewRecord,
   generateInterviewPack,
-  saveInterviewPack,
   getInterviewPack,
-  createDraftInterviewRecord
+  saveInterviewPack,
 } from '@/lib/services/interview';
 import type {
-  ResumeVersion,
-  JobDescription,
   InterviewPack,
-  InterviewQuestion
+  InterviewQuestion,
+  JobDescription,
+  ResumeVersion,
 } from '@/lib/types';
 
 export default function InterviewPrepPage() {
@@ -83,22 +92,11 @@ export default function InterviewPrepPage() {
 
     setGenerating(true);
     try {
-      const content = await generateInterviewPack(
-        resume.content,
-        job.analysis,
-        job
-      );
-
-      const savedPack = await saveInterviewPack(
-        user.id,
-        resume.id,
-        job.id,
-        content
-      );
+      const content = await generateInterviewPack(resume.content, job.analysis, job);
+      const savedPack = await saveInterviewPack(user.id, resume.id, job.id, content);
 
       setInterviewPack(savedPack);
 
-      // 自动创建草稿面试记录
       try {
         await createDraftInterviewRecord(
           user.id,
@@ -108,19 +106,18 @@ export default function InterviewPrepPage() {
           'technical'
         );
         toast({
-          title: '面试准备材料生成成功！',
-          description: '已自动创建面试复盘草稿，可在"面试记录"中查看'
+          title: '面试准备材料生成成功',
+          description: '已自动创建面试复盘草稿，可在面试中心查看。',
         });
       } catch (draftError) {
-        // 即使创建草稿失败，也不影响面试准备包的生成
-        console.error('创建草稿记录失败:', draftError);
-        toast({ title: '面试准备材料生成成功！' });
+        console.error('创建面试复盘草稿失败:', draftError);
+        toast({ title: '面试准备材料生成成功' });
       }
     } catch (error: any) {
       toast({
         title: '生成失败',
         description: error.message,
-        variant: 'destructive'
+        variant: 'destructive',
       });
     } finally {
       setGenerating(false);
@@ -131,7 +128,7 @@ export default function InterviewPrepPage() {
     return (
       <AppLayout>
         <div className="p-8 max-w-6xl mx-auto">
-          <div className="h-8 w-48 bg-gray-100 rounded animate-pulse mb-6" />
+          <div className="h-8 w-64 bg-gray-100 rounded animate-pulse mb-6" />
           <div className="h-96 bg-gray-100 rounded-xl animate-pulse" />
         </div>
       </AppLayout>
@@ -142,16 +139,26 @@ export default function InterviewPrepPage() {
     return (
       <AppLayout>
         <div className="p-8 max-w-4xl mx-auto">
+          <PageBreadcrumb
+            items={[
+              { label: '工作台', href: '/dashboard' },
+              { label: '求职项目', href: '/jobs' },
+              { label: '简历详情', href: `/resumes/${id}` },
+              { label: '面试准备' },
+            ]}
+          />
           <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <BookOpen className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">无法生成面试准备材料</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              无法生成面试准备材料
+            </h3>
             <p className="text-gray-500 mb-6">
-              此简历没有关联的职位描述，无法生成面试准备材料。
+              这份简历没有关联求职项目，无法基于岗位信息生成面试准备材料。
             </p>
             <Button onClick={() => router.push(`/resumes/${id}`)} className="bg-blue-600 hover:bg-blue-700">
-              返回简历
+              返回简历详情
             </Button>
           </div>
         </div>
@@ -159,58 +166,31 @@ export default function InterviewPrepPage() {
     );
   }
 
+  const projectHref = `/jobs/${job.id}`;
+
   return (
     <AppLayout>
       <div className="p-8 max-w-6xl mx-auto">
-        <div className="mb-6">
-          <Breadcrumb className="mb-4">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="/dashboard">工作台</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              {job ? (
-                <>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link href={`/jobs/${job.id}`}>
-                        {job.company_name} - {job.job_title}
-                      </Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                </>
-              ) : (
-                <>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link href="/resumes">简历列表</Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                </>
-              )}
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href={`/resumes/${id}`}>简历详情</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>面试准备</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+        <PageBreadcrumb
+          items={[
+            { label: '工作台', href: '/dashboard' },
+            { label: '求职项目', href: projectHref },
+            { label: '简历详情', href: `/resumes/${id}` },
+            { label: '面试准备' },
+          ]}
+        />
 
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">面试准备</h1>
-              <p className="text-gray-500">
-                {job.company_name} - {job.job_title}
-              </p>
-            </div>
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">面试准备</h1>
+            <p className="text-gray-500">
+              {job.company_name} · {job.job_title}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <Button variant="outline" asChild>
+              <Link href={projectHref}>返回求职项目</Link>
+            </Button>
             {!interviewPack && (
               <Button
                 onClick={handleGenerate}
@@ -220,7 +200,7 @@ export default function InterviewPrepPage() {
                 {generating ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    AI生成中...
+                    AI 生成中...
                   </>
                 ) : (
                   <>
@@ -237,45 +217,29 @@ export default function InterviewPrepPage() {
           <div className="bg-white rounded-xl border border-gray-200 p-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">开始准备面试</h3>
             <p className="text-gray-500 mb-6">
-              AI将基于你的简历和职位描述，生成个性化的面试准备材料
+              AI 将基于你的简历和职位描述，生成个性化的面试准备材料。
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                <BookOpen className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-1">常见问题</h4>
-                  <p className="text-sm text-gray-600">
-                    10个常见面试问题及基于你真实经历的参考答案
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                <Code className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-1">技术问题</h4>
-                  <p className="text-sm text-gray-600">
-                    5个技术问题及答题思路，基于职位要求的技术栈
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                <Users className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-1">行为问题</h4>
-                  <p className="text-sm text-gray-600">
-                    3个行为问题及STAR格式的参考答案
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                <HelpCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-1">反问环节</h4>
-                  <p className="text-sm text-gray-600">
-                    5个高质量的反问问题，展现你的深入思考
-                  </p>
-                </div>
-              </div>
+              <FeatureCard
+                icon={<BookOpen className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />}
+                title="常见问题"
+                description="整理常见面试问题，并给出基于你真实经历的参考回答。"
+              />
+              <FeatureCard
+                icon={<Code className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />}
+                title="专业问题"
+                description="围绕岗位要求拆解专业问题、能力考察点和回答思路。"
+              />
+              <FeatureCard
+                icon={<Users className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />}
+                title="行为问题"
+                description="用 STAR 结构组织校园经历、项目经历和协作经历。"
+              />
+              <FeatureCard
+                icon={<HelpCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />}
+                title="反问环节"
+                description="准备高质量反问问题，帮助你判断岗位和团队是否适合。"
+              />
             </div>
           </div>
         ) : (
@@ -287,7 +251,7 @@ export default function InterviewPrepPage() {
               </TabsTrigger>
               <TabsTrigger value="technical" className="data-[state=active]:bg-gray-100">
                 <Code className="w-4 h-4 mr-2" />
-                技术问题
+                专业问题
               </TabsTrigger>
               <TabsTrigger value="behavioral" className="data-[state=active]:bg-gray-100">
                 <Users className="w-4 h-4 mr-2" />
@@ -325,7 +289,7 @@ export default function InterviewPrepPage() {
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">反问环节建议</h3>
                 <p className="text-gray-500 mb-6">
-                  这些问题可以帮助你更好地了解公司和团队
+                  这些问题可以帮助你更好地了解公司、团队和岗位预期。
                 </p>
                 <ul className="space-y-3">
                   {interviewPack.content.reverse_questions?.map((q, i) => (
@@ -343,9 +307,7 @@ export default function InterviewPrepPage() {
             <TabsContent value="company">
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">公司背景速查</h3>
-                <p className="text-gray-500 mb-4">
-                  快速了解公司基本情况
-                </p>
+                <p className="text-gray-500 mb-4">快速了解公司基本情况。</p>
                 <p className="text-gray-900 leading-relaxed">
                   {interviewPack.content.company_background}
                 </p>
@@ -355,6 +317,26 @@ export default function InterviewPrepPage() {
         )}
       </div>
     </AppLayout>
+  );
+}
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+      {icon}
+      <div>
+        <h4 className="font-medium text-gray-900 mb-1">{title}</h4>
+        <p className="text-sm text-gray-600">{description}</p>
+      </div>
+    </div>
   );
 }
 
@@ -389,7 +371,7 @@ function QuestionCard({ question, index }: { question: InterviewQuestion; index:
           </div>
           {question.tips && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <h5 className="text-sm font-medium text-amber-900 mb-2">💡 回答技巧</h5>
+              <h5 className="text-sm font-medium text-amber-900 mb-2">回答技巧</h5>
               <p className="text-sm text-amber-800">{question.tips}</p>
             </div>
           )}

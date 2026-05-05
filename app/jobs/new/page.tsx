@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Upload, Sparkles, CircleAlert as AlertCircle } from 'lucide-react';
+import { CircleAlert as AlertCircle, FileText, Sparkles, Upload } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,31 +10,51 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { getMasterProfile } from '@/lib/services/profile';
 import { analyzeJobDescription } from '@/lib/services/analysis';
+import { getMasterProfile } from '@/lib/services/profile';
 
 type InputMode = 'paste' | 'upload';
 
-const SAMPLE_JD = `Senior Software Engineer - FinTech Platform
+const SAMPLE_JD = `AI 产品实习生
 
-We are looking for a Senior Software Engineer to join our payments infrastructure team. You will design and build scalable microservices, lead technical discussions, and mentor junior engineers.
+公司简介：
+某互联网科技公司，主要面向企业客户提供智能办公和数据分析产品。团队正在探索大模型在知识库问答、用户增长和业务自动化场景中的应用。
 
-Requirements:
-- 5+ years of full-stack development experience
-- Strong proficiency in TypeScript and React
-- Experience with cloud infrastructure (AWS or GCP)
-- Experience with microservices and distributed systems
-- Strong knowledge of REST APIs and CI/CD pipelines
-- Excellent communication and collaboration skills
+岗位职责：
+1. 协助产品经理完成用户调研、竞品分析和需求整理，输出需求文档和原型说明。
+2. 参与 AI 产品功能设计，包括对话流程、提示词策略、知识库配置和效果评估。
+3. 跟进研发、设计和测试同学的协作进度，记录问题并推动解决。
+4. 分析用户反馈和使用数据，提出产品优化建议。
+5. 协助整理产品说明文档、上线材料和内部培训资料。
 
-Responsibilities:
-- Design and build scalable backend services in Node.js
-- Collaborate with product and design teams on new features
-- Lead code reviews and set engineering standards
-- Mentor junior team members
-- Drive adoption of best practices for testing and deployment
+任职要求：
+1. 本科或研究生在读，计算机、信息管理、电子商务、心理学、统计学、新闻传播等相关专业优先。
+2. 对 AI 产品、大模型应用或智能工具有兴趣，愿意主动学习。
+3. 具备较好的逻辑表达和文档能力，能清晰梳理问题和需求。
+4. 熟悉 Axure、Figma、墨刀、飞书文档、Excel 等工具者优先。
+5. 每周至少实习 4 天，连续实习 3 个月以上。
 
-Nice to have: Python, GraphQL, Kubernetes`;
+加分项：
+1. 有校园项目、创新创业项目、产品分析报告或实习经历。
+2. 使用过 ChatGPT、通义千问、豆包、Kimi 等 AI 工具，并能总结使用体验。
+3. 了解基础数据分析方法，能用表格或 BI 工具完成简单分析。`;
+
+function getWordCount(text: string) {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function getErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : '分析失败，请重试';
+
+  if (message.includes('DeepSeek API Key')) {
+    return 'AI 服务未配置，请先填写 DeepSeek API Key。';
+  }
+  if (message.toLowerCase().includes('network') || message.toLowerCase().includes('fetch')) {
+    return '网络连接失败，请检查网络后重试。';
+  }
+
+  return message;
+}
 
 export default function JobInputPage() {
   const [mode, setMode] = useState<InputMode>('paste');
@@ -48,15 +68,15 @@ export default function JobInputPage() {
 
   const handleAnalyze = async () => {
     if (!companyName.trim()) {
-      setError('请输入公司名称');
+      setError('请输入公司名称。');
       return;
     }
     if (!jobTitle.trim()) {
-      setError('请输入职位名称');
+      setError('请输入职位名称。');
       return;
     }
     if (!jobText.trim()) {
-      setError('请粘贴职位描述');
+      setError('请粘贴职位描述。');
       return;
     }
     if (!user) return;
@@ -84,14 +104,13 @@ export default function JobInputPage() {
         .single();
 
       if (insertError || !data) {
-        setError('保存职位描述失败，请重试');
+        setError('保存职位描述失败，请重试。');
         return;
       }
 
       router.push(`/jobs/${data.id}/analysis`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : '分析失败，请重试';
-      setError(msg.includes('DeepSeek API Key') ? 'AI 服务未配置，请先填写 DeepSeek API Key' : msg);
+      setError(getErrorMessage(err));
     } finally {
       setAnalyzing(false);
     }
@@ -102,7 +121,9 @@ export default function JobInputPage() {
       <div className="p-8 max-w-3xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">新建求职项目</h1>
-          <p className="text-sm text-gray-500 mt-0.5">填写目标公司、职位和 JD，创建一条新的岗位申请，并开始后续的简历定制流程。</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            填写目标公司、职位和 JD，创建一条新的岗位申请，并开始后续的简历定制流程。
+          </p>
         </div>
 
         <div className="space-y-5">
@@ -111,11 +132,19 @@ export default function JobInputPage() {
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium text-gray-600">公司名称</Label>
-                <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="如字节跳动" />
+                <Input
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="如 字节跳动"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium text-gray-600">职位名称</Label>
-                <Input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="如 AI 产品实习生" />
+                <Input
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  placeholder="如 AI 产品实习生"
+                />
               </div>
             </div>
           </div>
@@ -156,7 +185,7 @@ export default function JobInputPage() {
                     placeholder="请粘贴完整的职位描述，包括岗位职责、任职要求、加分项等内容。"
                     className="min-h-[280px] resize-none text-sm leading-relaxed"
                   />
-                  <p className="text-xs text-gray-400">{jobText.split(/\s+/).filter(Boolean).length} 词</p>
+                  <p className="text-xs text-gray-400">约 {getWordCount(jobText)} 个词</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -168,7 +197,9 @@ export default function JobInputPage() {
                   </div>
                   <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-100 rounded-lg">
                     <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-amber-700">OCR 功能即将上线，目前请直接粘贴职位描述文字。</p>
+                    <p className="text-xs text-amber-700">
+                      OCR 功能即将上线，目前请直接粘贴职位描述文字。
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-gray-600">或手动粘贴文字</Label>
@@ -196,7 +227,9 @@ export default function JobInputPage() {
               <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-sm font-semibold text-gray-900">接下来会发生什么？</p>
-                <p className="text-xs text-gray-500 mt-0.5">系统会先分析 JD，再把这次申请作为一个求职项目，继续推进简历定制和面试准备。</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  系统会先分析 JD，再把这次申请作为一个求职项目，继续推进简历定制和面试准备。
+                </p>
               </div>
             </div>
           </div>

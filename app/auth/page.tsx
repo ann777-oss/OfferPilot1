@@ -9,6 +9,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 
+function translateAuthError(message: string, mode: 'signin' | 'signup') {
+  const text = message.toLowerCase();
+
+  if (text.includes('invalid login credentials')) return '邮箱或密码不正确，请检查后重试。';
+  if (text.includes('email not confirmed')) return '邮箱还没有完成验证，请先到邮箱里点击验证链接。';
+  if (text.includes('user already registered') || text.includes('already registered')) return '这个邮箱已经注册过，请直接登录。';
+  if (text.includes('password') && text.includes('characters')) return '密码长度不符合要求，请至少输入 8 位。';
+  if (text.includes('invalid email') || text.includes('email address')) return '邮箱格式不正确，请检查后重试。';
+  if (text.includes('signup') && text.includes('disabled')) return '当前暂时无法注册，请稍后再试。';
+  if (text.includes('rate limit') || text.includes('too many')) return '操作太频繁了，请稍等一会儿再试。';
+  if (text.includes('network') || text.includes('fetch')) return '网络连接失败，请检查网络后重试。';
+
+  return mode === 'signin' ? '登录失败，请检查邮箱和密码后重试。' : '注册失败，请检查填写信息后重试。';
+}
+
 export default function AuthPage() {
   const searchParams = useSearchParams();
   const [mode, setMode] = useState<'signin' | 'signup'>(
@@ -37,25 +52,26 @@ export default function AuthPage() {
       if (mode === 'signup') {
         if (!fullName.trim()) {
           setError('请填写姓名。');
-          setLoading(false);
           return;
         }
+
         const { error } = await signUp(email, password, fullName);
         if (error) {
-          setError(error.message);
-          setLoading(false);
+          setError(translateAuthError(error.message, mode));
           return;
         }
+
         router.push('/dashboard');
-      } else {
-        const { error } = await signIn(email, password);
-        if (error) {
-          setError(error.message);
-          setLoading(false);
-          return;
-        }
-        router.push('/dashboard');
+        return;
       }
+
+      const { error } = await signIn(email, password);
+      if (error) {
+        setError(translateAuthError(error.message, mode));
+        return;
+      }
+
+      router.push('/dashboard');
     } finally {
       setLoading(false);
     }
@@ -116,14 +132,20 @@ export default function AuthPage() {
           <div className="mb-6 flex gap-1 rounded-lg bg-gray-100 p-1">
             <button
               type="button"
-              onClick={() => setMode('signin')}
+              onClick={() => {
+                setMode('signin');
+                setError('');
+              }}
               className={`flex-1 rounded-md py-2 text-sm font-medium transition-all ${mode === 'signin' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
             >
               登录
             </button>
             <button
               type="button"
-              onClick={() => setMode('signup')}
+              onClick={() => {
+                setMode('signup');
+                setError('');
+              }}
               className={`flex-1 rounded-md py-2 text-sm font-medium transition-all ${mode === 'signup' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
             >
               注册
@@ -151,7 +173,7 @@ export default function AuthPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="请输入邮箱地址"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
@@ -165,7 +187,7 @@ export default function AuthPage() {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder={mode === 'signup' ? '至少 8 个字符' : '请输入密码'}
+                  placeholder={mode === 'signup' ? '至少 8 位字符' : '请输入密码'}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
@@ -176,6 +198,7 @@ export default function AuthPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  aria-label={showPassword ? '隐藏密码' : '显示密码'}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -207,7 +230,7 @@ export default function AuthPage() {
 
           <p className="mt-6 text-center text-xs text-gray-400">
             {mode === 'signup'
-              ? '注册即表示你同意我们的服务条款和隐私政策。'
+              ? '注册即表示你同意使用 OfferPilot 管理个人求职资料。'
               : '忘记密码？请联系管理员或客服。'}
           </p>
 

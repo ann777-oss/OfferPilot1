@@ -373,6 +373,7 @@ export interface ProjectProgress {
   interviewPrepId: string | null;
   hasInterviewRecord: boolean;
   interviewRecordId: string | null;
+  interviewRecordStatus?: 'draft' | 'completed' | null;
   hasOffer: boolean;
   completedSteps: number; // 0-4
 }

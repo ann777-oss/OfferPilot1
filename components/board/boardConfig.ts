@@ -36,7 +36,7 @@ export const BOARD_COLUMNS: ColumnConfig[] = [
   },
   {
     id: 'hr_interview',
-    label: 'HR面试',
+    label: 'HR 面试',
     color: 'text-purple-600',
     headerBg: 'bg-purple-50 border-purple-200',
     dotColor: 'bg-purple-500',
@@ -44,7 +44,7 @@ export const BOARD_COLUMNS: ColumnConfig[] = [
   },
   {
     id: 'technical_interview',
-    label: '技术面试',
+    label: '专业面试',
     color: 'text-emerald-600',
     headerBg: 'bg-emerald-50 border-emerald-200',
     dotColor: 'bg-emerald-500',
@@ -88,8 +88,8 @@ export const STATUS_LABELS: Record<BoardStatus, string> = {
   draft: '草稿',
   pending: '待投递',
   applied: '已投递',
-  hr_interview: 'HR面试',
-  technical_interview: '技术面试',
+  hr_interview: 'HR 面试',
+  technical_interview: '专业面试',
   final_interview: '终面',
   offer: 'Offer',
   rejected: '已拒绝',
